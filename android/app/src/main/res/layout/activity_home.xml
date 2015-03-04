@@ -2,12 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.crouzet.cavalec.heydude.activities.HomeActivity">
+    tools:context="com.crouzet.cavalec.heydude.activities.HomeActivity"
+    android:gravity="center">
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/btn_sign_in"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_margin="10dp"/>
 
     <ListView
         android:id="@+id/lv_contact"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone">
     </ListView>
 
 </LinearLayout>

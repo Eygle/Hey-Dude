@@ -8,7 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.crouzet.cavalec.heydude.R;
-import com.crouzet.cavalec.heydude.model.Chat;
 import com.crouzet.cavalec.heydude.model.Message;
 
 import java.text.SimpleDateFormat;

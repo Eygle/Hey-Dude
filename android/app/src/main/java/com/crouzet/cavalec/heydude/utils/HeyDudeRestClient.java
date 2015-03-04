@@ -1,4 +1,8 @@
 package com.crouzet.cavalec.heydude.utils;
+
+import android.os.Looper;
+import android.util.Log;
+
 import com.crouzet.cavalec.heydude.HeyDudeApplication;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.loopj.android.http.AsyncHttpClient;
@@ -6,7 +10,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
-import android.os.Looper;
 
 /**
  * Created by Johan on 19/02/2015.
@@ -43,6 +46,8 @@ public class HeyDudeRestClient {
 
         params.put("id", HeyDudeSessionVariables.id);
 
+        Log.d("Send GET Request", HeyDudeRestClient.API + "?" + params.toString());
+
         final AsyncHttpClient httpClient = getClient();
         httpClient.setTimeout(timeout);
         return httpClient.get(url, params, responseHandler);
@@ -54,6 +59,9 @@ public class HeyDudeRestClient {
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         params.put("id", HeyDudeSessionVariables.id);
+
+        Log.d("Send POST Request", HeyDudeRestClient.API + "?" + params.toString());
+
         getClient().post(url, params, responseHandler);
     }
 
