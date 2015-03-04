@@ -41,7 +41,7 @@ public class HeyDudeRestClient {
      */
     public static RequestHandle get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
 
-        params.put("id", HeyDudeSessionVariables.uid);
+        params.put("id", HeyDudeSessionVariables.id);
 
         final AsyncHttpClient httpClient = getClient();
         httpClient.setTimeout(timeout);
@@ -53,7 +53,7 @@ public class HeyDudeRestClient {
      * POST Request
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        params.put("id", HeyDudeSessionVariables.uid);
+        params.put("id", HeyDudeSessionVariables.id);
         getClient().post(url, params, responseHandler);
     }
 

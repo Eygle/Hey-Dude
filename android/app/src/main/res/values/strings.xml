@@ -10,4 +10,8 @@
     <string name="title_activity_chat">Chat</string>
     <string name="chat_hint">Message</string>
 
+    <!-- Button text -->
+    <string name="btn_logout_from_google">Logout</string>
+    <string name="btn_revoke_access">Revoke Access</string>
+
 </resources>

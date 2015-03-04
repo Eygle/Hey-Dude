@@ -11,8 +11,21 @@ try {
         switch ($_GET['action']) {
             case "get_online_users":
                 // TODO get all online users and print it
-                // TODO delete following line
-                echo json_encode(array("users" => array(array("gId" => 1234567890, "gImage" =>  "http://google.com/profilepicture1.jpg", "login" => "Bob", "email" => "bob@gmail.com", "IP" => "22.96.54.32"), array("gId" => 1234567899, "gImage" =>  "http://google.com/profilepictureAlice.jpg", "login" => "Alice", "email" => "alice@gmail.com", "IP" => "22.96.54.32"))));
+
+                // TODO delete following lines
+                $users = array();
+                $users[] = array(
+                    "gId" => 1234567890,
+                    "gImage" =>  "https://i.ytimg.com/vi/M99nzyiS830/hqdefault.jpg",
+                    "login" => "Bob",
+                    "email" => "bob@gmail.com",
+                    "IP" => "22.96.54.32");
+                $users[] = array("gId" => 1234567899,
+                    "gImage" =>  "http://www.proprofs.com/quiz-school/upload/yuiupload/1458266109.jpg",
+                    "login" => "Alice",
+                    "email" => "alice@gmail.com",
+                    "IP" => "22.96.54.32");
+                echo json_encode(array("users" => $users));
                 break;
             case "connection_status":
                 // Chech if the parameters are present and not empty. Throw an exception otherwise

@@ -1,10 +1,7 @@
 package com.crouzet.cavalec.heydude.activities;
 
 import android.app.Activity;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -14,7 +11,6 @@ import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.R;
 import com.crouzet.cavalec.heydude.adapters.ChatAdapter;
 import com.crouzet.cavalec.heydude.interfaces.ReceiverCallback;
-import com.crouzet.cavalec.heydude.model.Chat;
 import com.crouzet.cavalec.heydude.model.Message;
 import com.crouzet.cavalec.heydude.sockets.ReadSocket;
 import com.crouzet.cavalec.heydude.sockets.SendSocket;
@@ -73,12 +69,12 @@ public class ChatActivity extends Activity implements ReceiverCallback {
         String msg = message.getText().toString();
         sendSocket.send(msg);
         message.setText("");
-        msgs.add(new Message(msg, destName, HeyDudeSessionVariables.pseudo));
+        msgs.add(new Message(msg, destName, HeyDudeSessionVariables.login));
         adapter.notifyDataSetChanged();
     }
 
     public void receivedMessage(String msg) {
-        msgs.add(new Message(msg, HeyDudeSessionVariables.pseudo, destName));
+        msgs.add(new Message(msg, HeyDudeSessionVariables.login, destName));
         adapter.notifyDataSetChanged();
     }
 }
