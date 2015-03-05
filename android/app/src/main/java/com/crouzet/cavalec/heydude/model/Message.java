@@ -6,50 +6,58 @@ import java.util.Date;
  * Created by Johan on 19/02/2015.
  */
 public class Message {
-    private String msg;
+    private long id;
+    private String message;
     private String authorName;
     private String destName;
-    private Date sended = null;
-    private Date received = null;
+    private String image;
+    private Date date;
 
-    public Message(String m, String a, String d, Date s, Date r) {
-        msg = m;
-        authorName = a;
-        destName = d;
-        sended = s;
-        received = r;
+    public long getId() {
+        return id;
     }
 
-    public Message(String m, String a, String d,  Date s) {
-        msg = m;
-        authorName = a;
-        destName = d;
-        sended = s;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public Message(String m, String a, String d) {
-        msg = m;
-        authorName = a;
-        destName = d;
+    public String getMessage() {
+        return message;
     }
 
-    public Date getReceived() {
-        return received;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public Date getSended() {
-        return sended;
+    public String getAuthorName() {
+        return authorName;
     }
 
-    public String getMsg() {
-        return msg;
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
     }
 
     public String getDestName() {
         return destName;
     }
 
-    public String getAuthorName() {
-        return authorName;
+    public void setDestName(String destName) {
+        this.destName = destName;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

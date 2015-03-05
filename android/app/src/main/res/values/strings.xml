@@ -14,4 +14,11 @@
     <string name="btn_logout_from_google">Logout</string>
     <string name="btn_revoke_access">Revoke Access</string>
 
+    <string name="message_empty_error">The message can\'t be empty</string>
+    <string name="message_actions">Options relatives to message</string>
+    <array name="message_actions_array">
+        <item>Copy text</item>
+        <item>Delete</item>
+    </array>
+
 </resources>
