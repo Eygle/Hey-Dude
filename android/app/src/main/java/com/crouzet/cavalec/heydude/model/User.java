@@ -1,9 +1,11 @@
 package com.crouzet.cavalec.heydude.model;
 
+import java.io.Serializable;
+
 /**
  * Created by Johan on 19/02/2015.
  */
-public class User {
+public class User implements Serializable {
     private String id;
     private String name;
     private String email;

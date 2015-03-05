@@ -1,5 +1,6 @@
 package com.crouzet.cavalec.heydude.utils;
 
+import com.crouzet.cavalec.heydude.HeyDudeApplication;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -15,6 +16,13 @@ public class ApiUtils {
     public static void getOnlineUsers(JsonHttpResponseHandler jsonHandler) {
         RequestParams params = new RequestParams();
         params.add("action", "get_online_users");
+
+        HeyDudeRestClient.get(HeyDudeRestClient.API, params, jsonHandler, 30000);
+    }
+
+    public static void getUserCallingMe(JsonHttpResponseHandler jsonHandler) {
+        RequestParams params = new RequestParams();
+        params.add("action", "who_is_calling_me");
 
         HeyDudeRestClient.get(HeyDudeRestClient.API, params, jsonHandler, 30000);
     }
@@ -35,7 +43,7 @@ public class ApiUtils {
                             RequestParams params = new RequestParams();
                             params.add("action", "login");
                             params.add("name", HeyDudeSessionVariables.name);
-                            params.add("gImage", HeyDudeSessionVariables.image);
+                            params.add("image", HeyDudeSessionVariables.image);
                             params.add("email", HeyDudeSessionVariables.email);
                             params.add("publicKey", "");    // TODO generate and store key
                         }

@@ -40,6 +40,7 @@
         </activity>
 
         <service android:name=".services.BackgroundServiceUpdateOnlineUsers" />
+        <service android:name=".services.BackgroundServiceCheckIfUserCallMe" />
 
     </application>
 

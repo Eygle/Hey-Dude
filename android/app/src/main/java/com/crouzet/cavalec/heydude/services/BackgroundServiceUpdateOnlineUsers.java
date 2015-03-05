@@ -139,12 +139,12 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                     for (int i = 0; i < users.length(); ++i) {
                         JSONObject user = users.getJSONObject(i);
 
-                        String login = null;
+                        String name = null;
                         String gId = null;
                         String IP = null;
 
-                        if (user.has("login")) {
-                            login = user.getString("login");
+                        if (user.has("name")) {
+                            name = user.getString("name");
                         }
                         if (user.has("gId")) {
                             gId = user.getString("gId");
@@ -153,17 +153,17 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                             IP = user.getString("IP");
                         }
 
-                        if (login == null || gId == null || IP == null) {
+                        if (name == null || gId == null || IP == null) {
                             continue;
                         }
 
-                        User u = new User(gId, login, IP);
+                        User u = new User(gId, name, IP);
 
                         if (user.has("email")) {
                             u.setEmail(user.getString("email"));
                         }
-                        if (user.has("gImage")) {
-                            u.setImage(user.getString("gImage"));
+                        if (user.has("image")) {
+                            u.setImage(user.getString("image"));
                         }
 
                         list.add(u);

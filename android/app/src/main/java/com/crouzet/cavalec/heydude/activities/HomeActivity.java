@@ -1,12 +1,12 @@
 package com.crouzet.cavalec.heydude.activities;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -21,9 +21,10 @@ import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.R;
 import com.crouzet.cavalec.heydude.adapters.UsersAdapter;
+import com.crouzet.cavalec.heydude.model.User;
+import com.crouzet.cavalec.heydude.services.BackgroundServiceCheckIfUserCallMe;
 import com.crouzet.cavalec.heydude.services.BackgroundServiceUpdateOnlineUsers;
 import com.crouzet.cavalec.heydude.utils.ApiUtils;
-import com.crouzet.cavalec.heydude.utils.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.SignInButton;
@@ -37,6 +38,7 @@ import com.google.android.gms.plus.model.people.Person;
 public class HomeActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static Intent fgBackgroundServiceUpdateOnlineUsers;
+    private static Intent fgBackgroundServiceCheckCalls;
 
     ListView lvOnlineUsers;
     UsersAdapter adapter;
@@ -65,7 +67,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
     private SignInButton btnSignIn;
 
     /**
-     * Broadcast received when programs data are updated from server
+     * Broadcast received when online users data are updated from server
      */
     protected BroadcastReceiver updateBroadcast = new BroadcastReceiver() {
         @Override
@@ -74,6 +76,31 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     };
 
+    /**
+     * Broadcast received when online users data are updated from server
+     */
+    protected BroadcastReceiver receiveCall = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            Bundle b = intent.getExtras();
+            final User u = (User)b.getSerializable("caller");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(String.format(context.getString(R.string.receive_call_title), u.getName()))
+                    .setMessage(String.format(context.getString(R.string.receive_call_message), u.getName()))
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            HeyDudeSessionVariables.dest = u;
+
+                            Intent intent = new Intent(context, ChatActivity.class);
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton(R.string.no, null);
+            // Create the AlertDialog object and show it
+            builder.create().show();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +109,9 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
 
         if (fgBackgroundServiceUpdateOnlineUsers == null) {
             fgBackgroundServiceUpdateOnlineUsers = new Intent(this, BackgroundServiceUpdateOnlineUsers.class);
+        }
+        if (fgBackgroundServiceCheckCalls == null) {
+            fgBackgroundServiceCheckCalls = new Intent(this, BackgroundServiceCheckIfUserCallMe.class);
         }
 
         initialiseOnlineUsersList();
@@ -99,11 +129,14 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         super.onResume();
 
         registerReceiver(updateBroadcast, new IntentFilter(HeyDudeConstants.BROADCAST_REFRESH_LIST));
+        registerReceiver(receiveCall, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
 
         if (fgBackgroundServiceUpdateOnlineUsers != null && !BackgroundServiceUpdateOnlineUsers.mRunning) {
             startService(fgBackgroundServiceUpdateOnlineUsers);
         }
-
+        if (fgBackgroundServiceCheckCalls != null && !BackgroundServiceCheckIfUserCallMe.mRunning) {
+            startService(fgBackgroundServiceCheckCalls);
+        }
     }
 
     @Override
@@ -111,14 +144,21 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         super.onPause();
 
         unregisterReceiver(updateBroadcast);
+        unregisterReceiver(receiveCall);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
         if (fgBackgroundServiceUpdateOnlineUsers != null) {
             stopService(fgBackgroundServiceUpdateOnlineUsers);
         }
+
+        if (fgBackgroundServiceCheckCalls != null) {
+            stopService(fgBackgroundServiceCheckCalls);
+        }
+
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }

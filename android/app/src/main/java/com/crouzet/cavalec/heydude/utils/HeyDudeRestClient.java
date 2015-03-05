@@ -44,7 +44,11 @@ public class HeyDudeRestClient {
      */
     public static RequestHandle get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
 
-        params.put("id", HeyDudeSessionVariables.id);
+        params.put("gId", HeyDudeSessionVariables.id);
+
+        if (HeyDudeApplication.mock) {
+            params.add("mock", "true");
+        }
 
         Log.d("Send GET Request", HeyDudeRestClient.API + "?" + params.toString());
 
@@ -58,7 +62,11 @@ public class HeyDudeRestClient {
      * POST Request
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        params.put("id", HeyDudeSessionVariables.id);
+        params.put("gId", HeyDudeSessionVariables.id);
+
+        if (HeyDudeApplication.mock) {
+            params.add("mock", "true");
+        }
 
         Log.d("Send POST Request", HeyDudeRestClient.API + "?" + params.toString());
 

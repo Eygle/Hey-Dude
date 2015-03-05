@@ -10,6 +10,11 @@
     <string name="title_activity_chat">Chat</string>
     <string name="chat_hint">Message</string>
 
+    <string name="receive_call_title">%s is calling you</string>
+    <string name="receive_call_message">Do you want to open a conversation with %s ?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
     <!-- Button text -->
     <string name="btn_logout_from_google">Logout</string>
     <string name="btn_revoke_access">Revoke Access</string>
