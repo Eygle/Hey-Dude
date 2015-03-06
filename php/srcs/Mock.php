@@ -19,13 +19,13 @@ class Mock {
 
         $this->users["Bob"] = array(
             "gId" => 1234567890,
-            "gImage" =>  "https://i.ytimg.com/vi/M99nzyiS830/hqdefault.jpg",
+            "image" =>  "https://i.ytimg.com/vi/M99nzyiS830/hqdefault.jpg",
             "name" => "Bob",
             "email" => "bob@gmail.com",
             "IP" => "22.96.54.32");
         $this->users["Alice"] = array(
             "gId" => 1234567899,
-            "gImage" =>  "http://www.proprofs.com/quiz-school/upload/yuiupload/1458266109.jpg",
+            "image" =>  "http://www.proprofs.com/quiz-school/upload/yuiupload/1458266109.jpg",
             "name" => "Alice",
             "email" => "alice@gmail.com",
             "IP" => "22.96.54.32");
