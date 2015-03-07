@@ -18,7 +18,20 @@ class DBApi extends DAO
         $stmt = $this->pdo->prepare("SELECT * FROM users");
         $stmt->execute();
         $res1 = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch only one line from db
-        $res2 = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all occurences as a array
+        $res2 = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all occurrences as a array
         return $res1;
+    }
+
+    public function login($gid, $name,$img, $email, $pubk, $ip)
+    {
+        $stmt = $this->pdo->prepare("INSERT INTO users(gid, name, img, email, pubk, ip)
+                                     VALUES :gid, :name, :img, :email, :pubk, :ip");
+        $stmt->bindValue("gid", $gid);
+        $stmt->bindValue("name", $name);
+        $stmt->bindValue("img", $img);
+        $stmt->bindValue("email", $email);
+        $stmt->bindValue("pubk", $pubk);
+        $stmt->bindValue("ip", $ip);
+        $stmt->execute();
     }
 }

@@ -3,9 +3,11 @@
 require_once("utils/FilesManager.php");
 require_once("utils/Utils.php");
 require_once("Mock.php");
+require_once("db/DBApi.php");
 
 try {
     $display = array();
+    $db = new DBApi();
 
     if ($_SERVER["REQUEST_METHOD"] == 'GET') {
         // Set the mock
@@ -44,9 +46,9 @@ try {
         switch ($_POST['action']) {
             case "login":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
-                Utils::checkParams($_POST, array("gId", "name", "image", "publicKey"));
+                Utils::checkParams($_POST, array("gId", "name", "image", "email", "publicKey"));
 
-                // TODO
+                $db->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"], $_POST["publicKey"], $_SERVER["REMOTE_ADDR"]);
                 break;
             case "logout":
                 Utils::checkParams($_POST, array("gId"));

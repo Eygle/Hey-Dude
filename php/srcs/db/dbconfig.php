@@ -2,7 +2,7 @@
 
 if (!defined('DB_HOST')){
     define('DB_HOST', 'localhost');
-    define('DB_USER', 'johan');
-    define('DB_PASSWORD', '');
+    define('DB_USER', 'root');
+    define('DB_PASSWORD', 'toto');
     define('DB_DATABASE', 'heydude');
 }
