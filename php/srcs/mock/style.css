@@ -1,6 +1,5 @@
 body {
     background-color: #aaa;
-    text-align: center;
 }
 
 .content {
@@ -72,4 +71,16 @@ button {
     cursor: pointer;
     font-family: arial;
     color: #aaa;
+}
+
+.all_online {
+    margin: 10px;
+    color: green;
+    cursor: pointer;
+}
+
+.all_offline {
+    margin: 10px;
+    color: red;
+    cursor: pointer;
 }
