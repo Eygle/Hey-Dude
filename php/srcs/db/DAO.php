@@ -15,7 +15,7 @@ class DAO{
         try{
             $this->pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_DATABASE, DB_USER, DB_PASSWORD, $pdo_options);
         } catch (PDOException $e) {
-            print "Erreur de connexion<br/>";
+            //print "Erreur de connexion<br/>";
         }
     }
 }

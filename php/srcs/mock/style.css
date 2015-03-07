@@ -1,0 +1,75 @@
+body {
+    background-color: #aaa;
+    text-align: center;
+}
+
+.content {
+    width: 32%;
+    box-sizing: border-box;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #888;
+    display: inline-block;
+    margin-right: 1%;
+    margin-bottom: 25px;
+    text-align: left;
+    position: relative;
+}
+
+.crop {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.crop img {
+    max-width: 300px;
+    max-height: 300px;
+}
+
+.texts {
+    display: inline-block;
+    margin-left: 20px;
+    vertical-align: top;
+}
+
+.name {
+    font-weight: bold;
+}
+
+button {
+    margin: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.fst_btn {
+    margin-top: 20px;
+}
+
+.div {
+    display: block;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.label {
+    width: 100px;
+    display: inline-block;
+}
+
+.remove {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+    font-family: arial;
+    color: #aaa;
+}
