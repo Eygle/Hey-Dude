@@ -97,9 +97,9 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
                     .setMessage(String.format(context.getString(R.string.receive_call_message), u.getName()))
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            ApiUtils.answerCall(ApiUtils.ACCEPT_CALL);
-
                             HeyDudeSessionVariables.dest = u;
+
+                            ApiUtils.answerCall(ApiUtils.ACCEPT_CALL, u.getId());
 
                             Intent intent = new Intent(context, ChatActivity.class);
                             startActivity(intent);
@@ -108,7 +108,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
                     .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            ApiUtils.answerCall(ApiUtils.REFUSE_CALL);
+                            ApiUtils.answerCall(ApiUtils.REFUSE_CALL, u.getId());
                         }
                     });
             // Create the AlertDialog object and show it

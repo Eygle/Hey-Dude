@@ -64,10 +64,10 @@ public class ApiUtils {
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, jsonHandler);
     }
 
-    public static void answerCall(String answer) {
+    public static void answerCall(String answer, String gId) {
         RequestParams params = new RequestParams();
         params.add("action", "answer");
-        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+        params.add("destGId", gId);
         params.add("status", answer);
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler(), 30000);
