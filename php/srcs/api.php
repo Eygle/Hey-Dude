@@ -1,6 +1,5 @@
 <?php
 
-require_once("utils/FilesManager.php");
 require_once("utils/Utils.php");
 require_once("mock/Mock.php");
 require_once("db/DBApi.php");
@@ -15,10 +14,10 @@ try {
     if ($_SERVER["REQUEST_METHOD"] == 'GET') {
 
         // Check if the parameters are present and correct. Throw an exception otherwise
-        Utils::checkParams($_GET, "action", array(array("get_online_users", "call_status", "who_is_calling_me")));
+        Utils::checkParams($_GET, "action", array(array("online_users", "call_status", "who_is_calling_me")));
 
         switch ($_GET['action']) {
-            case "get_online_users":
+            case "online_users":
                 if (!$_GET['mock']) {
                     // TODO get all online users and add it in $display
 
@@ -49,7 +48,7 @@ try {
         }
     } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Check if the parameters are present and correct. Throw an exception otherwise
-        Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hangup", "answer", "remove")));
+        Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hang_up", "answer", "delete_account")));
 
         // Set the mock
         $mock = new Mock(isset($_POST['mock']) && $_POST['mock'] == "true");
@@ -85,7 +84,7 @@ try {
                     $mock->call($_POST["gId"]);
                 }
                 break;
-            case "hangup":
+            case "hang_up":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "destGId"));
 
@@ -105,7 +104,7 @@ try {
                     $mock->answer($_POST['status']);
                 }
                 break;
-            case "remove":
+            case "delete_account":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
 
@@ -113,7 +112,7 @@ try {
                 if (!$_POST['mock']) {
                     // TODO
                 } else {
-                    $mock->remove($_POST['gId']);
+                    $mock->deleteAccount($_POST['gId']);
                 }
                 break;
         }

@@ -13,9 +13,12 @@ import org.json.JSONObject;
  * Created by Johan on 03/03/2015.
  */
 public class ApiUtils {
+    public static final String ACCEPT_CALL = "accept";
+    public static final String REFUSE_CALL = "refuse";
+
     public static void getOnlineUsers(JsonHttpResponseHandler jsonHandler) {
         RequestParams params = new RequestParams();
-        params.add("action", "get_online_users");
+        params.add("action", "online_users");
 
         HeyDudeRestClient.get(HeyDudeRestClient.API, params, jsonHandler, 30000);
     }
@@ -27,33 +30,62 @@ public class ApiUtils {
         HeyDudeRestClient.get(HeyDudeRestClient.API, params, jsonHandler, 30000);
     }
 
-    public static void connect() {
+    public static void getCallStatus(JsonHttpResponseHandler jsonHandler) {
+        RequestParams params = new RequestParams();
+        params.add("action", "call_status");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.get(HeyDudeRestClient.API, params, jsonHandler, 30000);
+    }
+
+    public static void login() {
         RequestParams params = new RequestParams();
         params.add("action", "login");
+        params.add("name", HeyDudeSessionVariables.name);
+        params.add("image", HeyDudeSessionVariables.image);
+        params.add("email", HeyDudeSessionVariables.email);
+        params.add("publicKey", "");    // TODO generate and store key
 
-        JsonHttpResponseHandler handler = new JsonHttpResponseHandler() {
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response){
-                super.onFailure(statusCode, headers, throwable, response);
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
+    }
 
-                try  {
-                    if (response.has("error")) {
-                        if (response.getString("error").equals("No user is register with this gId")) {
-                            // If the user can't connect because it doesn't exist we add it to the server
-                            RequestParams params = new RequestParams();
-                            params.add("action", "login");
-                            params.add("name", HeyDudeSessionVariables.name);
-                            params.add("image", HeyDudeSessionVariables.image);
-                            params.add("email", HeyDudeSessionVariables.email);
-                            params.add("publicKey", "");    // TODO generate and store key
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+    public static void logout() {
+        RequestParams params = new RequestParams();
+        params.add("action", "logout");
 
-        HeyDudeRestClient.post(HeyDudeRestClient.API, params, handler);
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
+    }
+
+    public static void call(JsonHttpResponseHandler jsonHandler) {
+        RequestParams params = new RequestParams();
+        params.add("action", "call");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, jsonHandler);
+    }
+
+    public static void answerCall(String answer) {
+        RequestParams params = new RequestParams();
+        params.add("action", "answer");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+        params.add("status", answer);
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler(), 30000);
+    }
+
+    public static void hangup() {
+        RequestParams params = new RequestParams();
+        params.add("action", "hang_up");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
+    }
+
+    public static void deleteAccount() {
+        RequestParams params = new RequestParams();
+        params.add("action", "delete_account");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }
 }

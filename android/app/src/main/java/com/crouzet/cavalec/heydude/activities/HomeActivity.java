@@ -1,5 +1,8 @@
 package com.crouzet.cavalec.heydude.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -66,6 +70,9 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
 
     private SignInButton btnSignIn;
 
+    private View mProgressView;
+    MenuItem actionLogout, actionRevoke;
+
     /**
      * Broadcast received when online users data are updated from server
      */
@@ -90,13 +97,20 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
                     .setMessage(String.format(context.getString(R.string.receive_call_message), u.getName()))
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+                            ApiUtils.answerCall(ApiUtils.ACCEPT_CALL);
+
                             HeyDudeSessionVariables.dest = u;
 
                             Intent intent = new Intent(context, ChatActivity.class);
                             startActivity(intent);
                         }
                     })
-                    .setNegativeButton(R.string.no, null);
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ApiUtils.answerCall(ApiUtils.REFUSE_CALL);
+                        }
+                    });
             // Create the AlertDialog object and show it
             builder.create().show();
         }
@@ -113,6 +127,8 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         if (fgBackgroundServiceCheckCalls == null) {
             fgBackgroundServiceCheckCalls = new Intent(this, BackgroundServiceCheckIfUserCallMe.class);
         }
+
+        mProgressView = findViewById(R.id.login_progress);
 
         initialiseOnlineUsersList();
 
@@ -168,6 +184,10 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_home, menu);
+
+        actionLogout = menu.findItem(R.id.action_logout);
+        actionRevoke = menu.findItem(R.id.action_revoke);
+
         return true;
     }
 
@@ -176,10 +196,12 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         switch (item.getItemId()) {
             // action with ID action_refresh was selected
             case R.id.action_logout:
+                ApiUtils.logout();
                 signOutFromGplus();
                 break;
             // action with ID action_settings was selected
             case R.id.action_revoke:
+                ApiUtils.deleteAccount();
                 revokeGplusAccess();
                 break;
             default:
@@ -187,6 +209,34 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         }
 
         return true;
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        btnSignIn.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void initialiseOnlineUsersList() {
@@ -229,6 +279,8 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
      * Sign-in into google
      * */
     private void signInWithGplus() {
+        showProgress(true);
+
         if (!mGoogleApiClient.isConnecting()) {
             mSignInClicked = true;
             resolveSignInError();
@@ -284,6 +336,8 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
+        showProgress(false);
+
         if (!result.hasResolution()) {
             GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this,
                     0).show();
@@ -324,20 +378,14 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
     public void onConnected(Bundle arg0) {
         mSignInClicked = false;
 
+        showProgress(false);
+
         // Get user's information
         getProfileInformation();
 
         // Send the informations to the server so it can says we are online
-        ApiUtils.connect();
-
-        /*BitmapDrawable img = Utils.createBitmapFromURL(HeyDudeSessionVariables.image);
-        if (img != null) {
-            try {
-                getSupportActionBar().setIcon(img);
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-        }*/
+        Log.d(">>>>>>>>>>", ">>>>>>>>>> LOGIN");
+        ApiUtils.login();
 
         // Update the UI after signin
         updateUI(true);
@@ -351,9 +399,14 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         if (isSignedIn) {
             btnSignIn.setVisibility(View.GONE);
             lvOnlineUsers.setVisibility(View.VISIBLE);
+            actionLogout.setVisible(true);
+            actionRevoke.setVisible(true);
+
         } else {
             btnSignIn.setVisibility(View.VISIBLE);
             lvOnlineUsers.setVisibility(View.GONE);
+            actionLogout.setVisible(false);
+            actionRevoke.setVisible(false);
         }
     }
 
@@ -389,6 +442,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void onConnectionSuspended(int arg0) {
         mGoogleApiClient.connect();
+        showProgress(false);
         updateUI(false);
     }
 }

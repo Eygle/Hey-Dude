@@ -58,10 +58,7 @@ public class HeyDudeRestClient {
     }
 
 
-    /**
-     * POST Request
-     */
-    public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    private static void doPost(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, AsyncHttpClient httpClient) {
         params.put("gId", HeyDudeSessionVariables.id);
 
         if (HeyDudeApplication.mock) {
@@ -69,17 +66,25 @@ public class HeyDudeRestClient {
         }
 
         Log.d("Send POST Request", HeyDudeRestClient.API + "?" + params.toString());
-
-        getClient().post(url, params, responseHandler);
+        httpClient.post(url, params, responseHandler);
     }
 
 
     /**
-     * Build a get request
+     * POST Request
      */
-    public static String buildGetRequest(String url, String params){
-        return url + "?v=1&os=android" + (params.length() > 0 ? "&" + params : "");
+    public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        doPost(url, params, responseHandler, getClient());
     }
 
+
+    /**
+     * POST Request with timeout
+     */
+    public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
+        AsyncHttpClient httpClient = getClient();
+        httpClient.setTimeout(timeout);
+        doPost(url, params, responseHandler, httpClient);
+    }
 }
 

@@ -66,15 +66,17 @@ class Mock {
     }
 
     public function callStatus() {
-        $arr = array();
-
-        $arr["status"] = file_get_contents($this->mockStatusFile);
+        $arr = json_decode(file_get_contents($this->mockStatusFile), true);
         if ($arr["status"] == "accept") {
             $arr['key'] = "qfqmojdqmojd23ee2345654RFesf";
-            file_put_contents($this->mockStatusFile, "");
+            file_put_contents($this->mockStatusFile, json_encode(array("status" => "")));
         } elseif($arr["status"] == "refuse") {
-            file_put_contents($this->mockStatusFile, "");
+            file_put_contents($this->mockStatusFile, json_encode(array("status" => "")));
+        } elseif ($arr["status"] == "wait" && time() - $arr['timestamp'] > 30) {
+            file_put_contents($this->mockStatusFile, json_encode(array("status" => "")));
+            $arr["status"] = "timeout";
         }
+
         return $arr;
     }
 
@@ -100,9 +102,9 @@ class Mock {
         foreach ($users as $k=>$u) {
             if ($u["gId"] == $gId) {
                 file_put_contents($this->mockCallerFile, json_encode($u));
-                file_put_contents($this->mockStatusFile, "wait");
             }
         }
+        file_put_contents($this->mockStatusFile, json_encode(array("status" => "wait", "timestamp" => time())));
     }
 
     public function hangup($id) {
@@ -110,10 +112,10 @@ class Mock {
     }
 
     public function answer($status) {
-        file_put_contents($this->mockStatusFile, $status);
+        file_put_contents($this->mockStatusFile, json_encode(array("status" => $status, "timestamp" => time())));
     }
 
-    public function remove($gId) {
+    public function deleteAccount($gId) {
         $this->logout($gId);
         $this->removeUserFromFile($gId, $this->mockKnownFile);
     }
