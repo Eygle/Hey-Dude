@@ -85,12 +85,15 @@ class DBApi extends DAO
 
     public function answer($gid, $destgid, $status)
     {
-        $stmt = $this->pdo->prepare("UPDATE calls SET status=:status WHERE caller_gid = :gid AND dest_gid = :dest_gid;");;
+        $stmt = $this->pdo->prepare("UPDATE calls
+          SET status=:status
+          WHERE caller_gid = :destgid
+          AND dest_gid = :gid;");
 
         $stmt->execute(array(
-            ":gid" => $gid,
-            ":destgid" => $destgid,
-            ":status"> $status
+            "gid" => $gid,
+            "destgid" => $destgid,
+            "status" => $status
         ));
     }
 
@@ -137,6 +140,10 @@ class DBApi extends DAO
 
     public function callStatus($gid, $destgid)
     {
+        $this->pdo->exec("UPDATE calls
+            SET status = 'timeout'
+            WHERE TIMESTAMPDIFF(SECOND, timestamp, NOW()) >= ".TIMEOUT_CALLS);
+
         $stmt = $this->pdo->prepare("
         SELECT status
           FROM calls
@@ -151,7 +158,7 @@ class DBApi extends DAO
 
         $status = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($status['status'] == 'accepted') {
+        if ($status['status'] == 'accept') {
             $stmt = $this->pdo->prepare("
             SELECT pubk
               FROM users
@@ -162,9 +169,13 @@ class DBApi extends DAO
                 ":destgid" => $destgid
             ));
             $pubk = $stmt->fetch(PDO::FETCH_ASSOC);
-            return array_merge($status, $pubk);
+            $status["publicKey"] = $pubk["pubk"];
         }
-        return array('status' => $status);
+        if ($status["status"] != "wait") {
+            $stmt = $this->pdo->prepare("DELETE FROM calls WHERE caller_gid = :gid AND dest_gid = :destgid");
+            $stmt->execute(array(":gid" => $gid, ":destgid" => $destgid));
+        }
+        return $status;
     }
 
     public function whoIsCallingMe($gid)

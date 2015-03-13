@@ -11,10 +11,8 @@ try {
     // Set the mock
     $mock = new Mock();
 
-//    $_GET['mock'] = false;
-//    $_POST['mock'] = false;
     if ($_SERVER["REQUEST_METHOD"] == 'GET') {
-
+        $mockModeOn = isset($_GET['mock']) ? $_GET['mock'] : false;
         // Check if the parameters are present and correct. Throw an exception otherwise
         Utils::checkParams($_GET, "action", array(array("online_users", "call_status", "who_is_calling_me")));
 
@@ -22,7 +20,7 @@ try {
             case "online_users":
                 Utils::checkParams($_GET, array("gId"));
 
-                if (!$_GET['mock']) {
+                if (!$mockModeOn) {
                     $display = $db->onlineUsers($_GET["gId"]);
                 } else {
                     $display = $mock->onlineUsers();
@@ -32,7 +30,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_GET, array("gId", "destGId"));
 
-                if (!$_GET['mock']) {
+                if (!$mockModeOn) {
                     $display = $db->callStatus($_GET["gId"], $_GET["destGId"]);
                 } else {
                     $display = $mock->callStatus();
@@ -42,7 +40,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_GET, array("gId"));
 
-                if (!$_GET['mock']) {
+                if (!$mockModeOn) {
                     $display = $db->whoIsCallingMe($_GET["gId"]);
                 } else {
                     $display = $mock->whoIsCallingMe();
@@ -54,14 +52,15 @@ try {
         Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hang_up", "answer", "delete_account")));
 
         // Set the mock
-        $mock = new Mock(isset($_POST['mock']) && $_POST['mock'] == "true");
+        $mock = new Mock();
+        $mockModeOn = isset($_POST['mock']) ? $_POST['mock'] : false;
 
         switch ($_POST['action']) {
             case "login":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "name", "image", "email", "publicKey"));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"], $_POST["publicKey"], $_SERVER["REMOTE_ADDR"]);
                 } else {
                     $mock->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"]);
@@ -71,7 +70,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->logout($_POST["gId"]);
                 } else {
                     $mock->logout($_POST["gId"]);
@@ -81,7 +80,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "destGId"));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->call($_POST["gId"], $_POST["destGId"]);
                 } else {
                     $mock->call($_POST["gId"]);
@@ -91,7 +90,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "destGId"));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->hangup($_POST["gId"], $_POST["destGId"]);
                 } else {
                     $mock->hangup($_POST["gId"]);
@@ -101,7 +100,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("status", "gId", "destGId"), array(array("accept", "refuse")));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->answer($_POST["gId"], $_POST["destGId"], $_POST["status"]);
                 } else {
                     $mock->answer($_POST['status']);
@@ -111,7 +110,7 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
 
-                if (!$_POST['mock']) {
+                if (!$mockModeOn) {
                     $db->deleteAccount($_POST['gId']);
                 } else {
                     $mock->deleteAccount($_POST['gId']);
