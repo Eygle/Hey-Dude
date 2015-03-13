@@ -169,7 +169,7 @@ class DBApi extends DAO
                 ":destgid" => $destgid
             ));
             $pubk = $stmt->fetch(PDO::FETCH_ASSOC);
-            $status["publicKey"] = $pubk["pubk"];
+            $status["key"] = $pubk["pubk"];
         }
         if ($status["status"] != "wait") {
             $stmt = $this->pdo->prepare("DELETE FROM calls WHERE caller_gid = :gid AND dest_gid = :destgid");
