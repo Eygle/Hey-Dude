@@ -105,6 +105,7 @@ class DBApi extends DAO
 
     public function onlineUsers($gid)
     {
+        // Remove user that timeout and refresh timestamp of current user
         $stmt = $this->pdo->prepare("
         INSERT
           INTO online_users(gid, timestamp)
@@ -112,13 +113,14 @@ class DBApi extends DAO
           ON DUPLICATE KEY UPDATE timestamp=VALUES(timestamp);
         DELETE
           FROM online_users
-          WHERE SECOND(TIMEDIFF(NOW(), timestamp)) >= TIMEOUT_ONLINE_USER;
+          WHERE TIMESTAMPDIFF(SECOND, timestamp, NOW()) >= ".TIMEOUT_ONLINE_USER.";
         ");
 
         $stmt->execute(array(
             ":gid" => $gid
         ));
 
+        // Return all online users except yourself
         $stmt = $this->pdo->prepare("
         SELECT online_users.gid, users.image, users.name, users.email, users.ip
           FROM online_users
