@@ -11,6 +11,8 @@ try {
     // Set the mock
     $mock = new Mock();
 
+    $_GET['mock'] = false;
+    $_POST['mock'] = false;
     if ($_SERVER["REQUEST_METHOD"] == 'GET') {
 
         // Check if the parameters are present and correct. Throw an exception otherwise
@@ -18,9 +20,10 @@ try {
 
         switch ($_GET['action']) {
             case "online_users":
-                if (!$_GET['mock']) {
-                    // TODO get all online users and add it in $display
+                Utils::checkParams($_GET, array("gId"));
 
+                if (!$_GET['mock']) {
+                    $display = $db->onlineUsers($_GET["gId"]);
                 } else {
                     $display = $mock->onlineUsers();
                 }
@@ -30,7 +33,7 @@ try {
                 Utils::checkParams($_GET, array("gId", "destGId"));
 
                 if (!$_GET['mock']) {
-                    // TODO
+                    $display = $db->callStatus($_GET["gId"], $_GET["destGId"]);
                 } else {
                     $display = $mock->callStatus();
                 }
@@ -40,7 +43,7 @@ try {
                 Utils::checkParams($_GET, array("gId"));
 
                 if (!$_GET['mock']) {
-                    // TODO
+                    $display = $db->whoIsCallingMe($_GET["gId"]);
                 } else {
                     $display = $mock->whoIsCallingMe();
                 }
@@ -69,7 +72,7 @@ try {
                 Utils::checkParams($_POST, array("gId"));
 
                 if (!$_POST['mock']) {
-                    // TODO
+                    $db->logout($_POST["gId"]);
                 } else {
                     $mock->logout($_POST["gId"]);
                 }
@@ -79,7 +82,7 @@ try {
                 Utils::checkParams($_POST, array("gId", "destGId"));
 
                 if (!$_POST['mock']) {
-                    // TODO
+                    $db->call($_POST["gId"], $_POST["destGId"]);
                 } else {
                     $mock->call($_POST["gId"]);
                 }
@@ -89,7 +92,7 @@ try {
                 Utils::checkParams($_POST, array("gId", "destGId"));
 
                 if (!$_POST['mock']) {
-                    // TODO
+                    $db->hangup($_POST["gId"], $_POST["destGId"]);
                 } else {
                     $mock->hangup($_POST["gId"]);
                 }
@@ -99,7 +102,7 @@ try {
                 Utils::checkParams($_POST, array("status", "gId", "destGId"), array(array("accept", "refuse")));
 
                 if (!$_POST['mock']) {
-                    // TODO
+                    $db->answer($_POST["gId"], $_POST["destGId"], $_POST["status"]);
                 } else {
                     $mock->answer($_POST['status']);
                 }
@@ -108,9 +111,8 @@ try {
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
 
-
                 if (!$_POST['mock']) {
-                    // TODO
+                    $db->deleteAccount($_POST['gId']);
                 } else {
                     $mock->deleteAccount($_POST['gId']);
                 }

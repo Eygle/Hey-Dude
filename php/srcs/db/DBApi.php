@@ -13,25 +13,168 @@ class DBApi extends DAO
         parent::__construct(null, $db);
     }
 
-    private function getTest()
+    public function login($gid, $name, $image, $email, $pubk, $ip)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM users");
-        $stmt->execute();
-        $res1 = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch only one line from db
-        $res2 = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all occurrences as a array
-        return $res1;
+        $stmt = $this->pdo->prepare("
+        INSERT
+          INTO users(gid, name, image, email, pubk, ip)
+          VALUES(:gid, :name, :image, :email, :pubk, :ip)
+          ON DUPLICATE KEY UPDATE ip=VALUES(ip);
+        INSERT
+          INTO online_users(gid, timestamp)
+          VALUES(:gid, NOW())
+          ON DUPLICATE KEY UPDATE timestamp=VALUES(timestamp);
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+            ":name" => $name,
+            ":image" => $image,
+            ":email" => $email,
+            ":pubk" => $pubk,
+            ":ip" => $ip
+        ));
     }
 
-    public function login($gid, $name,$img, $email, $pubk, $ip)
+    public function logout($gid)
     {
-        $stmt = $this->pdo->prepare("INSERT INTO users(gid, name, img, email, pubk, ip)
-                                     VALUES :gid, :name, :img, :email, :pubk, :ip");
-        $stmt->bindValue("gid", $gid);
-        $stmt->bindValue("name", $name);
-        $stmt->bindValue("img", $img);
-        $stmt->bindValue("email", $email);
-        $stmt->bindValue("pubk", $pubk);
-        $stmt->bindValue("ip", $ip);
-        $stmt->execute();
+        $stmt = $this->pdo->prepare("DELETE FROM online_users WHERE gid = :gid;");
+
+        $stmt->execute(array(
+            ":gid" => $gid
+        ));
+    }
+
+    public function call($gid, $destgid)
+    {
+        $stmt = $this->pdo->prepare("
+        INSERT
+          INTO calls(caller_gid, dest_gid, timestamp, status)
+          VALUES(:gid, :destgid, NOW(), 'wait');
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+            ":destgid" => $destgid
+        ));
+    }
+
+    public function hangup($gid, $destgid)
+    {
+        $stmt = $this->pdo->prepare("
+        DELETE
+          FROM calls
+          WHERE caller_gid = :gid
+          AND dest_gid = :destgid;
+        INSERT
+          INTO online_users(gid, timestamp)
+          VALUES(:gid, NOW());
+        INSERT
+          INTO online_users(gid, timestamp)
+          VALUES(:destgid, NOW());
+        ");;
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+            ":destgid" => $destgid
+        ));
+    }
+
+    public function answer($gid, $destgid, $status)
+    {
+        $stmt = $this->pdo->prepare("UPDATE calls SET status=:status WHERE caller_gid = :gid AND dest_gid = :dest_gid;");;
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+            ":destgid" => $destgid,
+            ":status"> $status
+        ));
+    }
+
+    public function deleteAccount($gid)
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM users WHERE gid = :gid;");
+
+        $stmt->execute(array(
+            ":gid" => $gid
+        ));
+    }
+
+    public function onlineUsers($gid)
+    {
+        $stmt = $this->pdo->prepare("
+        INSERT
+          INTO online_users(gid, timestamp)
+          VALUES(:gid, NOW())
+          ON DUPLICATE KEY UPDATE timestamp=VALUES(timestamp);
+        DELETE
+          FROM online_users
+          WHERE MINUTE(TIMEDIFF(NOW(), timestamp)) >= 2;
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid
+        ));
+
+        $stmt = $this->pdo->prepare("
+        SELECT online_users.gid, users.image, users.name, users.email, users.ip
+          FROM online_users
+          JOIN users
+          ON users.gid = online_users.gid;
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid
+        ));
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function callStatus($gid, $destgid)
+    {
+        $stmt = $this->pdo->prepare("
+        SELECT status
+          FROM calls
+          WHERE caller_gid = :gid
+          AND dest_gid = :destgid;
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+            ":destgid" => $destgid
+        ));
+
+        $status = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($status['status'] == 'accepted') {
+            $stmt = $this->pdo->prepare("
+            SELECT pubk
+              FROM users
+              WHERE gid = :destgid;
+            ");
+
+            $stmt->execute(array(
+                ":destgid" => $destgid
+            ));
+            $pubk = $stmt->fetch(PDO::FETCH_ASSOC);
+            return array_merge($status, $pubk);
+        }
+        return array('status' => $status);
+    }
+
+    public function whoIsCallingMe($gid)
+    {
+        $stmt = $this->pdo->prepare("
+        SELECT users.gid, users.image, users.name, users.email, users.ip
+          FROM calls
+          JOIN users
+          ON users.gid = calls.caller_gid
+          WHERE caller_gid = :gid;
+        ");
+
+        $stmt->execute(array(
+            ":gid" => $gid,
+        ));
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
