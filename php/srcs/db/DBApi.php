@@ -125,17 +125,17 @@ class DBApi extends DAO
 
         // Return all online users except yourself
         $stmt = $this->pdo->prepare("
-        SELECT online_users.gid, users.image, users.name, users.email, users.ip
+        SELECT online_users.gid AS gId, users.image, users.name, users.email, users.ip AS IP
           FROM online_users
           JOIN users
           ON users.gid = online_users.gid
-          WHERE users.gid != :gid;
+          WHERE users.gid != :gid; //
         ");
 
         $stmt->execute(array(
             ":gid" => $gid
         ));
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array("users" => $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function callStatus($gid, $destgid)
@@ -181,11 +181,11 @@ class DBApi extends DAO
     public function whoIsCallingMe($gid)
     {
         $stmt = $this->pdo->prepare("
-        SELECT users.gid, users.image, users.name, users.email, users.ip
+        SELECT users.gid AS gId, users.image, users.name, users.email, users.ip AS IP
           FROM calls
           JOIN users
           ON users.gid = calls.caller_gid
-          WHERE caller_gid = :gid;
+          WHERE dest_gid = :gid;
         ");
 
         $stmt->execute(array(
