@@ -11,8 +11,8 @@ try {
     // Set the mock
     $mock = new Mock();
 
-    $_GET['mock'] = false;
-    $_POST['mock'] = false;
+//    $_GET['mock'] = false;
+//    $_POST['mock'] = false;
     if ($_SERVER["REQUEST_METHOD"] == 'GET') {
 
         // Check if the parameters are present and correct. Throw an exception otherwise

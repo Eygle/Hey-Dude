@@ -5,6 +5,9 @@ if (!defined('DBCONFIG_FILE')) {
 require_once DBCONFIG_FILE;
 require_once 'DAO.php';
 
+define("TIMEOUT_ONLINE_USER", 120);
+define("TIMEOUT_CALLS", 30);
+
 class DBApi extends DAO
 {
 
@@ -109,7 +112,7 @@ class DBApi extends DAO
           ON DUPLICATE KEY UPDATE timestamp=VALUES(timestamp);
         DELETE
           FROM online_users
-          WHERE MINUTE(TIMEDIFF(NOW(), timestamp)) >= 2;
+          WHERE SECOND(TIMEDIFF(NOW(), timestamp)) >= TIMEOUT_ONLINE_USER;
         ");
 
         $stmt->execute(array(
