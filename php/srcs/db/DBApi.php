@@ -123,7 +123,8 @@ class DBApi extends DAO
         SELECT online_users.gid, users.image, users.name, users.email, users.ip
           FROM online_users
           JOIN users
-          ON users.gid = online_users.gid;
+          ON users.gid = online_users.gid
+          WHERE users.gid != :gid;
         ");
 
         $stmt->execute(array(
