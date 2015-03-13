@@ -1,13 +1,11 @@
-package com.crouzet.cavalec.heydude.utils;
+package com.crouzet.cavalec.heydude.http;
 
-import com.crouzet.cavalec.heydude.HeyDudeApplication;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import org.apache.http.Header;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
 /**
  * Created by Johan on 03/03/2015.
@@ -44,7 +42,7 @@ public class ApiUtils {
         params.add("name", HeyDudeSessionVariables.name);
         params.add("image", HeyDudeSessionVariables.image);
         params.add("email", HeyDudeSessionVariables.email);
-        params.add("publicKey", "");    // TODO generate and store key
+        params.add("publicKey", new BigInteger(130, new SecureRandom()).toString(32));    // TODO generate and store key
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }

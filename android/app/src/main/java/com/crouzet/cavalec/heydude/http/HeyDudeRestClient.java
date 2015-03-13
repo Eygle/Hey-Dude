@@ -1,4 +1,4 @@
-package com.crouzet.cavalec.heydude.utils;
+package com.crouzet.cavalec.heydude.http;
 
 import android.os.Looper;
 import android.util.Log;

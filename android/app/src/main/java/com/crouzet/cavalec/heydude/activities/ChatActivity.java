@@ -26,7 +26,7 @@ import com.crouzet.cavalec.heydude.adapters.ChatAdapter;
 import com.crouzet.cavalec.heydude.db.MessagesDataSource;
 import com.crouzet.cavalec.heydude.interfaces.ReceiverCallback;
 import com.crouzet.cavalec.heydude.model.Message;
-import com.crouzet.cavalec.heydude.utils.ApiUtils;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;

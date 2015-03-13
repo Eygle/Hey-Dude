@@ -7,5 +7,5 @@ public class HeyDudeApplication {
     public static final String host = "http://195.154.91.110";
 
     //TODO check before send
-    public static final boolean mock = true;
+    public static final boolean mock = false;
 }

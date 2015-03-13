@@ -1,4 +1,4 @@
-package com.crouzet.cavalec.heydude.utils;
+package com.crouzet.cavalec.heydude.crypto;
 
 import java.security.InvalidKeyException;
 import java.security.Key;

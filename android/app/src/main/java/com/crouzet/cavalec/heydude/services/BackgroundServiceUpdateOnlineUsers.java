@@ -9,8 +9,9 @@ import android.util.Log;
 
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
+import com.crouzet.cavalec.heydude.http.ResponseHandler;
 import com.crouzet.cavalec.heydude.model.User;
-import com.crouzet.cavalec.heydude.utils.ApiUtils;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
@@ -43,20 +44,37 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
         public void run() {
             final Runnable r = this;
 
-            ApiUtils.getOnlineUsers(new JsonHttpResponseHandler() {
+            ApiUtils.getOnlineUsers(new ResponseHandler() {
                 @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-                    super.onSuccess(statusCode, headers, response);
-                    try {
-                        Log.d("Request success", response.toString());
-                        new UpdateData().execute(response);
-                        if (mRunning) {
-                            Log.d(TAG, "Scheduling new refresh");
-                            handler.postDelayed(r, UPDATE_USERS_DELAY);
-                        }
-                    } catch (Exception e){e.printStackTrace();}
+                public void success(JSONObject response) {
+                    Log.d("Online request success", response.toString());
+                    new UpdateData().execute(response);
+
+                    if (mRunning) {
+                        Log.d(TAG, "Scheduling new refresh");
+                        handler.postDelayed(r, UPDATE_USERS_DELAY);
+                    }
+                }
+
+                @Override
+                public void failure() {
+                    if (mRunning) {
+                        Log.d(TAG, "Scheduling new refresh");
+                        handler.postDelayed(r, UPDATE_USERS_DELAY);
+                    }
                 }
             });
+
+//            ApiUtils.getOnlineUsers(new JsonHttpResponseHandler() {
+//                @Override
+//                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
+//                    super.onSuccess(statusCode, headers, response);
+//                    try {
+//                        Log.d("Online request success", response.toString());
+//                        new UpdateData().execute(response);
+//                    } catch (Exception e){e.printStackTrace();}
+//                }
+//            });
         }
     };
 

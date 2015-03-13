@@ -28,7 +28,7 @@ import com.crouzet.cavalec.heydude.adapters.UsersAdapter;
 import com.crouzet.cavalec.heydude.model.User;
 import com.crouzet.cavalec.heydude.services.BackgroundServiceCheckIfUserCallMe;
 import com.crouzet.cavalec.heydude.services.BackgroundServiceUpdateOnlineUsers;
-import com.crouzet.cavalec.heydude.utils.ApiUtils;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.SignInButton;
