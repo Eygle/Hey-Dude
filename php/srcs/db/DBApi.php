@@ -16,13 +16,13 @@ class DBApi extends DAO
         parent::__construct(null, $db);
     }
 
-    public function login($gid, $name, $image, $email, $pubk, $ip)
+    public function login($gid, $name, $image, $email, $pubk, $ip, $port)
     {
         $stmt = $this->pdo->prepare("
         INSERT
-          INTO users(gid, name, image, email, pubk, ip)
-          VALUES(:gid, :name, :image, :email, :pubk, :ip)
-          ON DUPLICATE KEY UPDATE ip=VALUES(ip);
+          INTO users(gid, name, image, email, pubk, ip, port)
+          VALUES(:gid, :name, :image, :email, :pubk, :ip, :port)
+          ON DUPLICATE KEY UPDATE ip=VALUES(ip), port=VALUES(port);
         INSERT
           INTO online_users(gid, timestamp)
           VALUES(:gid, NOW())
@@ -35,7 +35,8 @@ class DBApi extends DAO
             ":image" => $image,
             ":email" => $email,
             ":pubk" => $pubk,
-            ":ip" => $ip
+            ":ip" => $ip,
+            ":port" => $port
         ));
     }
 
@@ -125,7 +126,7 @@ class DBApi extends DAO
 
         // Return all online users except yourself
         $stmt = $this->pdo->prepare("
-        SELECT online_users.gid AS gId, users.image, users.name, users.email, users.ip AS IP
+        SELECT online_users.gid AS gId, users.image, users.name, users.email, users.ip AS IP, users.port
           FROM online_users
           JOIN users
           ON users.gid = online_users.gid
@@ -171,7 +172,7 @@ class DBApi extends DAO
             $pubk = $stmt->fetch(PDO::FETCH_ASSOC);
             $status["key"] = $pubk["pubk"];
         }
-        if ($status["status"] != "wait") {
+        if ($status["status"] != "wait" && $status["status"] != "deliver") {
             $stmt = $this->pdo->prepare("DELETE FROM calls WHERE caller_gid = :gid AND dest_gid = :destgid");
             $stmt->execute(array(":gid" => $gid, ":destgid" => $destgid));
         }
@@ -181,11 +182,12 @@ class DBApi extends DAO
     public function whoIsCallingMe($gid)
     {
         $stmt = $this->pdo->prepare("
-        SELECT users.gid AS gId, users.image, users.name, users.email, users.ip AS IP
+        SELECT users.gid AS gId, users.image, users.name, users.email, users.ip AS IP, users.port
           FROM calls
           JOIN users
           ON users.gid = calls.caller_gid
-          WHERE dest_gid = :gid;
+          WHERE dest_gid = :gid AND status = 'wait';
+        UPDATE calls SET status = 'deliver' WHERE dest_gid = :gid;
         ");
 
         $stmt->execute(array(

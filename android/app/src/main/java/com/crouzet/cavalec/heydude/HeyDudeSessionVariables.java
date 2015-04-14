@@ -13,6 +13,7 @@ public class HeyDudeSessionVariables {
     public static String name;
     public static String email;
     public static String image;
+    public static int port;
 
     public static List<User> onlineUsers = new ArrayList<>();
 

@@ -8,12 +8,10 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.http.ResponseHandler;
 import com.crouzet.cavalec.heydude.model.User;
-import com.crouzet.cavalec.heydude.http.ApiUtils;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +39,7 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
             ApiUtils.getUserCallingMe(new ResponseHandler() {
                 @Override
                 public void success(JSONObject response) {
-                    Log.d("Calls request success", response.toString());
+                    Log.d(TAG, "Calls request success: " + response.toString());
                     new UpdateData().execute(response);
 
                     if (mRunning) {
@@ -58,22 +56,6 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
                     }
                 }
             });
-
-//                @Override
-//                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-//                    super.onSuccess(statusCode, headers, response);
-//                    try {
-//                        Log.d("Calls request success", response.toString());
-//                        new UpdateData().execute(response);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-
-//            if (mRunning) {
-//                Log.d(TAG, "Scheduling new refresh");
-//                handler.postDelayed(r, CHECK_CALLS_DELAY);
-//            }
         }
     };
 
@@ -133,8 +115,9 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
                     String gId = data[0].getString("gId");
                     String name = data[0].getString("name");
                     String IP = data[0].getString("IP");
+                    Integer port = data[0].getInt("port");
 
-                    caller = new User(gId, name, IP);
+                    caller = new User(gId, name, IP, port);
 
                     if (data[0].has("image")) {
                         caller.setImage(data[0].getString("image"));

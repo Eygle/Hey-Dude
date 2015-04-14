@@ -15,6 +15,7 @@ import com.loopj.android.http.SyncHttpClient;
  * Created by Johan on 19/02/2015.
  */
 public class HeyDudeRestClient {
+    private static final String TAG = HeyDudeRestClient.class.getSimpleName();
 
     public final static String HOST = HeyDudeApplication.host;
     public final static String API = HOST + "/heydude/api.php";
@@ -50,7 +51,7 @@ public class HeyDudeRestClient {
             params.add("mock", "true");
         }
 
-        Log.d("Send GET Request", HeyDudeRestClient.API + "?" + params.toString());
+        Log.d(TAG, "Send GET Request: " + HeyDudeRestClient.API + "?" + params.toString());
 
         final AsyncHttpClient httpClient = getClient();
         httpClient.setTimeout(timeout);
@@ -65,7 +66,7 @@ public class HeyDudeRestClient {
             params.add("mock", "true");
         }
 
-        Log.d("Send POST Request", HeyDudeRestClient.API + "?" + params.toString());
+        Log.d(TAG, "Send POST Request: " + HeyDudeRestClient.API + "?" + params.toString());
         httpClient.post(url, params, responseHandler);
     }
 

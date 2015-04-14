@@ -1,7 +1,6 @@
 package com.crouzet.cavalec.heydude.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +53,10 @@ public class UsersAdapter extends ArrayAdapter<User> {
 
         holder.name.setText(u.getName());
         holder.email.setText(u.getEmail());
-        Picasso.with(context).load(u.getImage()).resize(200, 200).centerCrop().into(holder.image);
+        Picasso.with(context).load(u.getImage()).resize(
+                (int)context.getResources().getDimension(R.dimen.user_picture_width),
+                (int)context.getResources().getDimension(R.dimen.user_picture_height)
+        ).centerCrop().into(holder.image);
 
         return rowView;
     }

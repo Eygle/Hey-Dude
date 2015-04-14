@@ -5,13 +5,17 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -20,15 +24,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.R;
 import com.crouzet.cavalec.heydude.adapters.UsersAdapter;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
+import com.crouzet.cavalec.heydude.interfaces.IAppManager;
 import com.crouzet.cavalec.heydude.model.User;
 import com.crouzet.cavalec.heydude.services.BackgroundServiceCheckIfUserCallMe;
+import com.crouzet.cavalec.heydude.services.BackgroundServiceHandleSockets;
 import com.crouzet.cavalec.heydude.services.BackgroundServiceUpdateOnlineUsers;
-import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.SignInButton;
@@ -73,6 +80,8 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
     private View mProgressView;
     MenuItem actionLogout, actionRevoke;
 
+    private IAppManager imService;
+
     /**
      * Broadcast received when online users data are updated from server
      */
@@ -102,6 +111,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
                             ApiUtils.answerCall(ApiUtils.ACCEPT_CALL, u.getId());
 
                             Intent intent = new Intent(context, ChatActivity.class);
+                            intent.putExtra("ACCEPT_CALL", true);
                             startActivity(intent);
                         }
                     })
@@ -116,9 +126,33 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     };
 
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            Log.d(TAG, "Socket service connected");
+            imService = ((BackgroundServiceHandleSockets.IMBinder)service).getService();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            Log.d(TAG, "Socket service disconnected");
+            imService = null;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        startService(new Intent(this, BackgroundServiceHandleSockets.class));
+
         setContentView(R.layout.activity_home);
 
         if (fgBackgroundServiceUpdateOnlineUsers == null) {
@@ -147,6 +181,8 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         registerReceiver(updateBroadcast, new IntentFilter(HeyDudeConstants.BROADCAST_REFRESH_LIST));
         registerReceiver(receiveCall, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
 
+        bindService(new Intent(this, BackgroundServiceHandleSockets.class), mConnection , Context.BIND_AUTO_CREATE);
+
         if (fgBackgroundServiceUpdateOnlineUsers != null && !BackgroundServiceUpdateOnlineUsers.mRunning) {
             startService(fgBackgroundServiceUpdateOnlineUsers);
         }
@@ -161,6 +197,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
 
         unregisterReceiver(updateBroadcast);
         unregisterReceiver(receiveCall);
+        unbindService(mConnection);
     }
 
     @Override
@@ -383,9 +420,7 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         // Get user's information
         getProfileInformation();
 
-        // Send the informations to the server so it can says we are online
-        Log.d(">>>>>>>>>>", ">>>>>>>>>> LOGIN");
-        ApiUtils.login();
+        handler.post(tryLogin);
 
         // Update the UI after signin
         updateUI(true);
@@ -445,4 +480,19 @@ public class HomeActivity extends ActionBarActivity implements GoogleApiClient.C
         showProgress(false);
         updateUI(false);
     }
+
+    private Handler handler = new Handler();
+    private Runnable tryLogin = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "Check if port is listened");
+            if (imService != null && imService.getListeningPort() != 0) {
+                Log.d(TAG, "Login");
+                HeyDudeSessionVariables.port = imService.getListeningPort();
+                ApiUtils.login();
+            } else {
+                handler.postDelayed(this, 500);
+            }
+        }
+    };
 }

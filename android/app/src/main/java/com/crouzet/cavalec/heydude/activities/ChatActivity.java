@@ -2,12 +2,18 @@ package com.crouzet.cavalec.heydude.activities;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -20,13 +26,18 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.R;
 import com.crouzet.cavalec.heydude.adapters.ChatAdapter;
 import com.crouzet.cavalec.heydude.db.MessagesDataSource;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
+import com.crouzet.cavalec.heydude.interfaces.IAppManager;
 import com.crouzet.cavalec.heydude.interfaces.ReceiverCallback;
 import com.crouzet.cavalec.heydude.model.Message;
-import com.crouzet.cavalec.heydude.http.ApiUtils;
+import com.crouzet.cavalec.heydude.services.BackgroundServiceHandleSockets;
+import com.crouzet.cavalec.heydude.sockets.ReadSocket;
+import com.crouzet.cavalec.heydude.sockets.SendSocket;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
@@ -38,11 +49,11 @@ import java.util.Date;
 import java.util.List;
 
 public class ChatActivity extends ActionBarActivity implements ReceiverCallback {
-
+    private static final String TAG = ChatActivity.class.getSimpleName();
     private final int CHECK_CALLS_STATUS_DELAY = 3000;
 
-    //private ReadSocket readSocket;
-    //private SendSocket sendSocket;
+    private ReadSocket readSocket = null;
+    private SendSocket sendSocket = null;
 
     private EditText editTextMsg;
 
@@ -58,6 +69,32 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
 
     public static boolean mRunning = false;
 
+    private IAppManager imService;
+
+    /**
+     * Broadcast received when online users data are updated from server
+     */
+    protected BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            Bundle b = intent.getExtras();
+            receivedMessage(b.getString("MESSAGE"));
+        }
+    };
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            imService = ((BackgroundServiceHandleSockets.IMBinder)service).getService();
+        }
+        public void onServiceDisconnected(ComponentName className) {
+            imService = null;
+            // TODO display alert
+//            Toast.makeText(Messaging.this, R.string.local_service_stopped,
+//                    Toast.LENGTH_SHORT).show();
+        }
+    };
+
     private Runnable checkCallStatus = new Runnable() {
         @Override
         public void run() {
@@ -69,15 +106,17 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
                     super.onSuccess(statusCode, headers, response);
                     if (!mRunning) return;
                     try {
-                        Log.d(">>>>>>>>>>", response.toString());
+                        Log.d(TAG, response.toString());
                         switch (response.getString("status")) {
                             case "accept":
+                                //sendSocket = new SendSocket(HeyDudeSessionVariables.dest.getIP(), true);
                                 callAccepted();
                                 break;
                             case "refuse":
                                 callRefused();
                                 break;
                             case "wait":
+                            case "deliver":
                                 handler.postDelayed(r, CHECK_CALLS_STATUS_DELAY);
                                 break;
                             case "timeout":
@@ -106,6 +145,13 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
             e.printStackTrace();
         }
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.getBoolean("ACCEPT_CALL")) {
+//            readSocket = new ReadSocket(false, this);
+//            sendSocket = new SendSocket(HeyDudeSessionVariables.dest.getIP(), false);
+            callAccepted();
+        }
+
         editTextMsg = (EditText)findViewById(R.id.chat_message);
 
         try {
@@ -121,6 +167,13 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
     protected void onResume() {
         super.onResume();
 
+        bindService(new Intent(ChatActivity.this, BackgroundServiceHandleSockets.class), mConnection , Context.BIND_AUTO_CREATE);
+
+        IntentFilter i = new IntentFilter();
+        i.addAction(HeyDudeConstants.BROADCAST_RECEIVE_MSG);
+
+        registerReceiver(messageReceiver, i);
+
         try {
             db.open();
         } catch (SQLException e) {
@@ -129,12 +182,24 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(messageReceiver);
+        unbindService(mConnection);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
 
         db.close();
-        //sendSocket.closeSocket();
-        //readSocket.closeSocket();
+//        if (readSocket != null) {
+//            readSocket.closeSocket();
+//        }
+//        if (sendSocket != null) {
+//            sendSocket.closeSocket();
+//        }
     }
 
 
@@ -210,6 +275,10 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
     }
 
     private void call() {
+//        if (readSocket != null) {
+//            readSocket.closeSocket();
+//        }
+//        readSocket = new ReadSocket(true, this);
         mRunning = true;
         ApiUtils.call(new JsonHttpResponseHandler() {
             @Override
@@ -269,14 +338,31 @@ public class ChatActivity extends ActionBarActivity implements ReceiverCallback 
     }
 
     public void sendMessage(View v) {
-        String msg = editTextMsg.getText().toString();
+        final String msg = editTextMsg.getText().toString();
 
         if (msg.length() == 0) {
             Toast.makeText(this, R.string.message_empty_error, Toast.LENGTH_SHORT).show();
             return;
         }
 
+        Toast.makeText(this, "Send message to: "+HeyDudeSessionVariables.dest.getIP()+":"+HeyDudeSessionVariables.dest.getPort()+"\nlistening port " + imService.getListeningPort(), Toast.LENGTH_LONG).show();
+
         //sendSocket.send(msg);
+        Thread thread = new Thread(){
+            public void run() {
+                if (!imService.sendMessage(msg))
+                {
+                    // TODO Display error
+//                    handler.post(new Runnable(){
+//                        public void run() {
+//                            showDialog(MESSAGE_CANNOT_BE_SENT);
+//                        }
+//                    });
+                }
+            }
+        };
+        thread.start();
+
         editTextMsg.setText("");
 
         Message message = db.createMessage(msg,

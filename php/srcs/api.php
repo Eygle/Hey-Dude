@@ -58,10 +58,10 @@ try {
         switch ($_POST['action']) {
             case "login":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
-                Utils::checkParams($_POST, array("gId", "name", "image", "email", "publicKey"));
+                Utils::checkParams($_POST, array("gId", "name", "image", "email", "publicKey", "port"));
 
                 if (!$mockModeOn) {
-                    $db->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"], $_POST["publicKey"], $_SERVER["REMOTE_ADDR"]);
+                    $db->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"], $_POST["publicKey"], $_SERVER["REMOTE_ADDR"], $_POST['port']);
                 } else {
                     $mock->login($_POST["gId"], $_POST["name"], $_POST["image"], $_POST["email"]);
                 }

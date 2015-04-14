@@ -67,7 +67,10 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
         holder.msg.setText(m.getMessage());
         holder.date.setText(formatDate(m.getDate()));
-        Picasso.with(context).load(m.getImage()).resize(150, 150).centerCrop().into(holder.img);
+        Picasso.with(context).load(m.getImage()).resize(
+                (int)context.getResources().getDimension(R.dimen.chat_picture_width),
+                (int)context.getResources().getDimension(R.dimen.chat_picture_height)
+        ).centerCrop().into(holder.img);
 
         return rowView;
     }

@@ -42,6 +42,7 @@ public class ApiUtils {
         params.add("name", HeyDudeSessionVariables.name);
         params.add("image", HeyDudeSessionVariables.image);
         params.add("email", HeyDudeSessionVariables.email);
+        params.add("port", String.valueOf(HeyDudeSessionVariables.port));
         params.add("publicKey", new BigInteger(130, new SecureRandom()).toString(32));    // TODO generate and store key
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());

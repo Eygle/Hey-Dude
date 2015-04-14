@@ -1,7 +1,9 @@
 package com.crouzet.cavalec.heydude.sockets;
 
 import android.os.Handler;
+import android.util.Log;
 
+import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.interfaces.ReceiverCallback;
 
 import java.io.BufferedReader;
@@ -14,8 +16,9 @@ import java.net.Socket;
  * Created by Johan on 26/02/2015.
  */
 public class ReadSocket {
+    private static final String TAG = ReadSocket.class.getSimpleName();
+
     private int PORT = 4243;
-    private String IP;
 
     private ServerSocket socket;
     private Handler updateConversationHandler;
@@ -23,8 +26,7 @@ public class ReadSocket {
 
     private ReceiverCallback callback;
 
-    public ReadSocket(String ip, boolean caller, ReceiverCallback callback) {
-        IP = ip;
+    public ReadSocket(boolean caller, ReceiverCallback callback) {
         PORT = caller ? 4243 : 4242;
 
         this.callback = callback;
@@ -32,9 +34,13 @@ public class ReadSocket {
         updateConversationHandler = new Handler();
         thread = new Thread(new ReadThread());
         thread.start();
+
+        Log.e(TAG, HeyDudeSessionVariables.name + " read socket port: " + PORT);
     }
 
     public void closeSocket() {
+        Log.d(TAG, "Close socket");
+        if (socket == null) return;
         try {
             socket.close();
         } catch (IOException e) {
@@ -56,7 +62,10 @@ public class ReadSocket {
 
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    Log.d(TAG, "Try to read socket");
+                    if (ReadSocket.this.socket == null) return;
                     socket = ReadSocket.this.socket.accept();
+                    Log.d(TAG, "Read socket");
                     CommunicationThread commThread = new CommunicationThread(socket);
                     new Thread(commThread).start();
                 } catch (IOException e) {
@@ -84,6 +93,7 @@ public class ReadSocket {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    Log.d(TAG, "Try to get message");
                     String read = input.readLine();
                     //updateConversationHandler.post(new updateUIThread(read));
                     System.out.println(read);

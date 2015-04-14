@@ -1,5 +1,9 @@
 package com.crouzet.cavalec.heydude.sockets;
 
+import android.util.Log;
+
+import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -11,6 +15,8 @@ import java.net.Socket;
  * Created by Johan on 26/02/2015.
  */
 public class SendSocket {
+    private static String TAG = SendSocket.class.getSimpleName();
+
     private Socket socket;
     private int PORT;
     private String IP;
@@ -18,6 +24,8 @@ public class SendSocket {
     public SendSocket(String ip, boolean caller) {
         IP = ip;
         PORT = caller ? 4242 : 4243;
+
+        Log.e(TAG,  HeyDudeSessionVariables.name + " send socket: " + IP + ":" + PORT);
 
         new Thread(new ClientThread()).start();
     }
@@ -33,6 +41,7 @@ public class SendSocket {
     }
 
     public void closeSocket() {
+        Log.d(TAG, "Close socket");
         try {
             socket.close();
         } catch (IOException|NullPointerException e) {

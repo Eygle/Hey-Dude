@@ -9,12 +9,10 @@ import android.util.Log;
 
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
+import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.http.ResponseHandler;
 import com.crouzet.cavalec.heydude.model.User;
-import com.crouzet.cavalec.heydude.http.ApiUtils;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +45,7 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
             ApiUtils.getOnlineUsers(new ResponseHandler() {
                 @Override
                 public void success(JSONObject response) {
-                    Log.d("Online request success", response.toString());
+                    Log.d(TAG, "Online request success: " + response.toString());
                     new UpdateData().execute(response);
 
                     if (mRunning) {
@@ -64,17 +62,6 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                     }
                 }
             });
-
-//            ApiUtils.getOnlineUsers(new JsonHttpResponseHandler() {
-//                @Override
-//                public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-//                    super.onSuccess(statusCode, headers, response);
-//                    try {
-//                        Log.d("Online request success", response.toString());
-//                        new UpdateData().execute(response);
-//                    } catch (Exception e){e.printStackTrace();}
-//                }
-//            });
         }
     };
 
@@ -160,6 +147,7 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                         String name = null;
                         String gId = null;
                         String IP = null;
+                        Integer port = null;
 
                         if (user.has("name")) {
                             name = user.getString("name");
@@ -170,12 +158,15 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                         if (user.has("IP")) {
                             IP = user.getString("IP");
                         }
+                        if (user.has("port")) {
+                            port = user.getInt("port");
+                        }
 
-                        if (name == null || gId == null || IP == null) {
+                        if (name == null || gId == null || IP == null || port == null) {
                             continue;
                         }
 
-                        User u = new User(gId, name, IP);
+                        User u = new User(gId, name, IP, port);
 
                         if (user.has("email")) {
                             u.setEmail(user.getString("email"));
