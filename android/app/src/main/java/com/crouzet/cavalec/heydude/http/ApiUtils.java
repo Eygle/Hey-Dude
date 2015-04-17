@@ -39,10 +39,10 @@ public class ApiUtils {
     public static void login() {
         RequestParams params = new RequestParams();
         params.add("action", "login");
-        params.add("name", HeyDudeSessionVariables.name);
-        params.add("image", HeyDudeSessionVariables.image);
-        params.add("email", HeyDudeSessionVariables.email);
-        params.add("port", String.valueOf(HeyDudeSessionVariables.port));
+        params.add("name", HeyDudeSessionVariables.me.getName());
+        params.add("image", HeyDudeSessionVariables.me.getImage());
+        params.add("email", HeyDudeSessionVariables.me.getEmail());
+        params.add("token", HeyDudeSessionVariables.token);
         params.add("publicKey", new BigInteger(130, new SecureRandom()).toString(32));    // TODO generate and store key
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
@@ -55,12 +55,12 @@ public class ApiUtils {
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }
 
-    public static void call(JsonHttpResponseHandler jsonHandler) {
+    public static void call() {
         RequestParams params = new RequestParams();
         params.add("action", "call");
         params.add("destGId", HeyDudeSessionVariables.dest.getId());
 
-        HeyDudeRestClient.post(HeyDudeRestClient.API, params, jsonHandler);
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }
 
     public static void answerCall(String answer, String gId) {
@@ -83,6 +83,15 @@ public class ApiUtils {
     public static void deleteAccount() {
         RequestParams params = new RequestParams();
         params.add("action", "delete_account");
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
+    }
+
+    public static void sendMessage(String message) {
+        RequestParams params = new RequestParams();
+        params.add("action", "sendMessage");
+        params.add("message", message);
         params.add("destGId", HeyDudeSessionVariables.dest.getId());
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());

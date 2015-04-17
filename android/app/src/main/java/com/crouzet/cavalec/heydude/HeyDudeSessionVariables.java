@@ -9,13 +9,11 @@ import java.util.List;
  * Created by Johan on 19/02/2015.
  */
 public class HeyDudeSessionVariables {
-    public static String id;
-    public static String name;
-    public static String email;
-    public static String image;
-    public static int port;
+    public static String token;
+
+    public static User me;
+    public static User dest;
 
     public static List<User> onlineUsers = new ArrayList<>();
 
-    public static User dest = null;
 }

@@ -62,8 +62,7 @@ CREATE TABLE `users` (
   `img` varchar(200) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL,
   `pubk` varchar(256) NOT NULL,
-  `ip` varchar(15) NOT NULL,
-  `port` integer NOT NULL,
+  `token` varchar(256) NOT NULL,
   PRIMARY KEY (`gid`),
   UNIQUE KEY `gid_UNIQUE` (`gid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

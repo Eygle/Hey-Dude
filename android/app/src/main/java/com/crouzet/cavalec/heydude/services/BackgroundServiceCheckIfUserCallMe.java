@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
+import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.http.ResponseHandler;
 import com.crouzet.cavalec.heydude.model.User;
@@ -36,14 +37,18 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
         public void run() {
             final Runnable r = this;
 
+            if (HeyDudeSessionVariables.me == null) {
+                handler.postDelayed(r, CHECK_CALLS_DELAY);
+                return;
+            }
             ApiUtils.getUserCallingMe(new ResponseHandler() {
                 @Override
                 public void success(JSONObject response) {
-                    Log.d(TAG, "Calls request success: " + response.toString());
+                    Log.v(TAG, "Calls request success: " + response.toString());
                     new UpdateData().execute(response);
 
                     if (mRunning) {
-                        Log.d(TAG, "Scheduling new refresh");
+                        Log.v(TAG, "Scheduling new refresh");
                         handler.postDelayed(r, CHECK_CALLS_DELAY);
                     }
                 }
@@ -51,7 +56,7 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
                 @Override
                 public void failure() {
                     if (mRunning) {
-                        Log.d(TAG, "Scheduling new refresh");
+                        Log.v(TAG, "Scheduling new refresh");
                         handler.postDelayed(r, CHECK_CALLS_DELAY);
                     }
                 }
@@ -62,13 +67,13 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind");
+        Log.v(TAG, "onBind");
         return null;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.d(TAG, "onUnbind");
+        Log.v(TAG, "onUnbind");
         return super.onUnbind(intent);
     }
 
@@ -77,15 +82,15 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
         super.onCreate();
         mRunning = true;
 
-        Log.d(TAG, "onCreate");
+        Log.v(TAG, "onCreate");
 
         long currentTime = System.currentTimeMillis();
         long diff = currentTime - mTimeAtDestroy;
         if (mTimeAtDestroy > 0 && diff < CHECK_CALLS_DELAY){
-            Log.d(TAG, "Schedule update online users in " + ((CHECK_CALLS_DELAY - diff) / 1000) + " seconds");
+            Log.v(TAG, "Schedule update online users in " + ((CHECK_CALLS_DELAY - diff) / 1000) + " seconds");
             handler.postDelayed(checkCalls, CHECK_CALLS_DELAY - diff);
         } else{
-            Log.d(TAG, "Update now.");
+            Log.v(TAG, "Update now.");
             handler.post(checkCalls);
         }
     }
@@ -96,7 +101,7 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
         mRunning = false;
         mTimeAtDestroy = System.currentTimeMillis();
         handler.removeCallbacks(checkCalls);
-        Log.d(TAG, "onDestroy");
+        Log.v(TAG, "onDestroy");
     }
 
 
@@ -114,10 +119,8 @@ public class BackgroundServiceCheckIfUserCallMe extends Service {
                 if (data[0].has("gId")) {
                     String gId = data[0].getString("gId");
                     String name = data[0].getString("name");
-                    String IP = data[0].getString("IP");
-                    Integer port = data[0].getInt("port");
 
-                    caller = new User(gId, name, IP, port);
+                    caller = new User(gId, name);
 
                     if (data[0].has("image")) {
                         caller.setImage(data[0].getString("image"));

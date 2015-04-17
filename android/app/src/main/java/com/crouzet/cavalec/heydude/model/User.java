@@ -10,14 +10,10 @@ public class User implements Serializable {
     private String name;
     private String email;
     private String image;
-    private String IP;
-    private int port;
 
-    public User(String gId, String name, String ip, Integer port) {
+    public User(String gId, String name) {
         this.id = gId;
         this.name = name;
-        this.IP = ip;
-        this.port = port;
     }
 
     public String getId() {
@@ -47,17 +43,5 @@ public class User implements Serializable {
     @Override
     public boolean equals(Object o) {
         return o instanceof User && id.equals(((User) o).getId());
-    }
-
-    public String getIP() {
-        return IP;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 }

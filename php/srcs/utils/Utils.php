@@ -23,6 +23,53 @@ class Utils {
         }
     }
 
+    public static function sendOnlineUsersList($db, $gId = null) {
+        $tokens = $db->getOnlineUsersTokens();
+        if (count($tokens) > 0) {
+            self::sendPush($tokens, array("action" => "refresh_user_list", "list" => json_encode($db->onlineUsers($gId))));
+        }
+    }
+
+    public static function sendPush($tokens, $data) {
+        // Set POST variables
+        $url = 'https://android.googleapis.com/gcm/send';
+
+        $fields = array(
+            'registration_ids' => $tokens,
+            'data' => $data,
+        );
+
+        $headers = array(
+            'Authorization: key=AIzaSyBqSPVp50G_CYQEVAuinfaD8KQjqZSbycA',
+            'Content-Type: application/json'
+        );
+        //print_r($headers);
+        // Open connection
+        $ch = curl_init();
+
+        // Set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // Disabling SSL Certificate support temporarly
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+
+        // Execute post
+        $result = curl_exec($ch);
+        if ($result === FALSE) {
+            die('Curl failed: ' . curl_error($ch));
+        }
+
+        // Close connection
+        curl_close($ch);
+        echo $result;
+    }
+
     private static function checkParam($t, $p, $val, $i = 0) {
         if (!isset($t[$p]) || empty($t[$p])) {
             throw new Exception("Parameter $p do not exist or is empty.");

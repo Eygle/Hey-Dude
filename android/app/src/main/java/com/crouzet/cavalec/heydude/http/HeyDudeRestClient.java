@@ -44,14 +44,13 @@ public class HeyDudeRestClient {
      * GET Request
      */
     public static RequestHandle get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
-
-        params.put("gId", HeyDudeSessionVariables.id);
+        params.put("gId", HeyDudeSessionVariables.me.getId());
 
         if (HeyDudeApplication.mock) {
             params.add("mock", "true");
         }
 
-        Log.d(TAG, "Send GET Request: " + HeyDudeRestClient.API + "?" + params.toString());
+        Log.v(TAG, "Send GET Request: " + HeyDudeRestClient.API + "?" + params.toString());
 
         final AsyncHttpClient httpClient = getClient();
         httpClient.setTimeout(timeout);
@@ -60,13 +59,13 @@ public class HeyDudeRestClient {
 
 
     private static void doPost(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, AsyncHttpClient httpClient) {
-        params.put("gId", HeyDudeSessionVariables.id);
+        params.put("gId", HeyDudeSessionVariables.me.getId());
 
         if (HeyDudeApplication.mock) {
             params.add("mock", "true");
         }
 
-        Log.d(TAG, "Send POST Request: " + HeyDudeRestClient.API + "?" + params.toString());
+        Log.v(TAG, "Send POST Request: " + HeyDudeRestClient.API + "?" + params.toString());
         httpClient.post(url, params, responseHandler);
     }
 

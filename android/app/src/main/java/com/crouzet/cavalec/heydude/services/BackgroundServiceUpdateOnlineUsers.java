@@ -42,14 +42,18 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
         public void run() {
             final Runnable r = this;
 
+            if (HeyDudeSessionVariables.me == null) {
+                handler.postDelayed(r, UPDATE_USERS_DELAY);
+                return;
+            }
             ApiUtils.getOnlineUsers(new ResponseHandler() {
                 @Override
                 public void success(JSONObject response) {
-                    Log.d(TAG, "Online request success: " + response.toString());
+                    Log.v(TAG, "Online request success: " + response.toString());
                     new UpdateData().execute(response);
 
                     if (mRunning) {
-                        Log.d(TAG, "Scheduling new refresh");
+                        Log.v(TAG, "Scheduling new refresh");
                         handler.postDelayed(r, UPDATE_USERS_DELAY);
                     }
                 }
@@ -57,7 +61,7 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                 @Override
                 public void failure() {
                     if (mRunning) {
-                        Log.d(TAG, "Scheduling new refresh");
+                        Log.v(TAG, "Scheduling new refresh");
                         handler.postDelayed(r, UPDATE_USERS_DELAY);
                     }
                 }
@@ -68,13 +72,13 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind");
+        Log.v(TAG, "onBind");
         return null;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.d(TAG, "onUnbind");
+        Log.v(TAG, "onUnbind");
         return super.onUnbind(intent);
     }
 
@@ -83,15 +87,15 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
         super.onCreate();
         mRunning = true;
 
-        Log.d(TAG, "onCreate");
+        Log.v(TAG, "onCreate");
 
         long currentTime = System.currentTimeMillis();
         long diff = currentTime - mTimeAtDestroy;
         if (mTimeAtDestroy > 0 && diff < UPDATE_USERS_DELAY){
-            Log.d(TAG, "Schedule update online users in " + ((UPDATE_USERS_DELAY - diff) / 1000) + " seconds");
+            Log.v(TAG, "Schedule update online users in " + ((UPDATE_USERS_DELAY - diff) / 1000) + " seconds");
             handler.postDelayed(updateOnlineUsers, UPDATE_USERS_DELAY - diff);
         } else{
-            Log.d(TAG, "Update now.");
+            Log.v(TAG, "Update now.");
             handler.post(updateOnlineUsers);
         }
     }
@@ -102,7 +106,7 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
         mRunning = false;
         mTimeAtDestroy = System.currentTimeMillis();
         handler.removeCallbacks(updateOnlineUsers);
-        Log.d(TAG, "onDestroy");
+        Log.v(TAG, "onDestroy");
     }
 
 
@@ -118,7 +122,7 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 Intent intent = new Intent();
-                intent.setAction(HeyDudeConstants.BROADCAST_REFRESH_LIST);
+                intent.setAction(HeyDudeConstants.BROADCAST_REFRESH_USER_LIST);
                 sendBroadcast(intent);
             }
         }
@@ -146,8 +150,6 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
 
                         String name = null;
                         String gId = null;
-                        String IP = null;
-                        Integer port = null;
 
                         if (user.has("name")) {
                             name = user.getString("name");
@@ -155,18 +157,12 @@ public class BackgroundServiceUpdateOnlineUsers extends Service {
                         if (user.has("gId")) {
                             gId = user.getString("gId");
                         }
-                        if (user.has("IP")) {
-                            IP = user.getString("IP");
-                        }
-                        if (user.has("port")) {
-                            port = user.getInt("port");
-                        }
 
-                        if (name == null || gId == null || IP == null || port == null) {
+                        if (name == null || gId == null) {
                             continue;
                         }
 
-                        User u = new User(gId, name, IP, port);
+                        User u = new User(gId, name);
 
                         if (user.has("email")) {
                             u.setEmail(user.getString("email"));

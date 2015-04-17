@@ -39,7 +39,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
     @Override
     public int getItemViewType(int position) {
-        return (list.get(position).getAuthorName().equals(HeyDudeSessionVariables.name)) ? 0 : 1;
+        return (list.get(position).getAuthorName().equals(HeyDudeSessionVariables.me.getName())) ? 0 : 1;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
