@@ -1,4 +1,4 @@
-package crouzet.cryptotest;
+package com.crouzet.cavalec.heydude.utils;
 
 import java.security.InvalidKeyException;
 import java.security.Key;

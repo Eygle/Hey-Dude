@@ -19,10 +19,13 @@ import java.util.List;
 
 /**
  * Created by Johan on 26/02/2015.
+ * Adapter used to manage and display Messages in chat
  */
 public class ChatAdapter extends ArrayAdapter<Message> {
 
+    // List of messages
     private List<Message> list;
+    // Parent Contect
     private Context context;
 
     public ChatAdapter(Context context, List<Message> values) {
@@ -42,6 +45,13 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         return (list.get(position).getAuthorName().equals(HeyDudeSessionVariables.me.getName())) ? 0 : 1;
     }
 
+    /**
+     * Return view of each message
+     * @param position position in list view
+     * @param convertView previous view
+     * @param parent parent
+     * @return new view
+     */
     public View getView(int position, View convertView, ViewGroup parent) {
         View rowView = convertView;
         int type = getItemViewType(position);
@@ -75,6 +85,11 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         return rowView;
     }
 
+    /**
+     * Display human readable date from Date object
+     * @param d date object
+     * @return human readable date string
+     */
     private String formatDate(Date d) {
         Date now = new Date();
         String nowStr = new SimpleDateFormat("ddMMyy").format(now);
@@ -96,8 +111,11 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         }
 
         return new SimpleDateFormat("dd MMM HH:mm").format(d);
-}
+    }
 
+    /**
+     * Used for list view optimisation
+     */
     static class ViewHolder {
         public TextView msg, date;
         public ImageView img;

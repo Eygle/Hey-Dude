@@ -30,8 +30,10 @@ import com.google.android.gms.plus.model.people.Person;
 
 /**
  * Created by Johan on 16/04/2015.
+ * Activity that allow users to connect with their Google+ account
  */
 public class GooglePlusSigninActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener  {
+    // List of online users
     protected ListView lvOnlineUsers;
 
     // Google Plus

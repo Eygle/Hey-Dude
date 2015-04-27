@@ -25,14 +25,22 @@ import com.crouzet.cavalec.heydude.utils.UserUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
+/**
+ * First activity launch
+ * Allow user to connect via Google+
+ * Display list of online users
+ */
 public class HomeActivity extends GooglePlusSigninActivity {
-
+    // Online user list view's Adapter
     private UsersAdapter adapter;
 
+    // Allow users to login in an asynchronous way
     private Handler handler;
 
+    // Dialog used to display received calls
     private AlertDialog dialogCall;
+
+    // Caller informations
     private User caller;
 
     @Override
@@ -41,6 +49,7 @@ public class HomeActivity extends GooglePlusSigninActivity {
 
         setContentView(R.layout.activity_home);
 
+        // Initialise Google Cloud Messaging
         new GcmManager(this);
 
         initialiseGooglePlus();
@@ -51,10 +60,12 @@ public class HomeActivity extends GooglePlusSigninActivity {
     public void onResume() {
         super.onResume();
 
+        // Register receivers
         registerReceiver(updateBroadcast, new IntentFilter(HeyDudeConstants.BROADCAST_REFRESH_USER_LIST));
         registerReceiver(receiveCall, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
         registerReceiver(receiveHangup, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_HANGUP));
 
+        // Send login to the server
         handler = new Handler();
         handler.post(login);
     }
@@ -63,6 +74,7 @@ public class HomeActivity extends GooglePlusSigninActivity {
     protected void onPause() {
         super.onPause();
 
+        // Unregister receiver
         unregisterReceiver(updateBroadcast);
         unregisterReceiver(receiveCall);
         unregisterReceiver(receiveHangup);
@@ -71,19 +83,18 @@ public class HomeActivity extends GooglePlusSigninActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
 
+        // Logout
         if (HeyDudeSessionVariables.me != null && HeyDudeSessionVariables.token != null) {
             ApiUtils.logout();
         }
     }
 
+    /**
+     * Initialise and display online users
+     */
     private void initialiseOnlineUsersList() {
         lvOnlineUsers = (ListView) findViewById(R.id.lv_contact);
 
@@ -102,6 +113,10 @@ public class HomeActivity extends GooglePlusSigninActivity {
         });
     }
 
+    /**
+     * Asynchronous object used to try to login periodically
+     * The login fail while the user is not connected to Google+
+     */
     private Runnable login = new Runnable() {
         @Override
         public void run() {
