@@ -57,24 +57,13 @@ public class CryptoRSA {
         return pubKey.getEncoded();
     }
 
-    public byte[] encrypt(String text) throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
-        cipher.init(Cipher.ENCRYPT_MODE, pubKey, random);
-
-        byte[] input = text.getBytes();
-        byte[] cipherText = cipher.doFinal(input);
-
-        System.out.println("cipher: " + new String(cipherText));
-        return cipherText;
-    }
-
-    public byte[] encrypt(String text, byte[] pubKeyByte) throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public byte[] encrypt(byte[] input, byte[] pubKeyByte) throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
         X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pubKeyByte);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PublicKey pubKey = keyFactory.generatePublic(pubKeySpec);
 
         cipher.init(Cipher.ENCRYPT_MODE, pubKey, random);
 
-        byte[] input = text.getBytes();
         byte[] cipherText = cipher.doFinal(input);
 
         System.out.println("cipher: " + new String(cipherText));
