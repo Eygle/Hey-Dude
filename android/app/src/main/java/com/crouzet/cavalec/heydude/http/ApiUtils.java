@@ -1,5 +1,7 @@
 package com.crouzet.cavalec.heydude.http;
 
+import android.util.Base64;
+
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -88,10 +90,20 @@ public class ApiUtils {
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }
 
-    public static void sendMessage(String message) {
+    public static void sendMessage(byte[] message, byte[] iv) {
         RequestParams params = new RequestParams();
         params.add("action", "sendMessage");
-        params.add("message", message);
+        params.add("message", Base64.encodeToString(message, Base64.DEFAULT));
+        params.add("iv", Base64.encodeToString(iv, Base64.DEFAULT));
+        params.add("destGId", HeyDudeSessionVariables.dest.getId());
+
+        HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
+    }
+
+    public static void sendKey(byte[] key) {
+        RequestParams params = new RequestParams();
+        params.add("action", "sendKey");
+        params.add("key", Base64.encodeToString(key, Base64.DEFAULT));
         params.add("destGId", HeyDudeSessionVariables.dest.getId());
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());

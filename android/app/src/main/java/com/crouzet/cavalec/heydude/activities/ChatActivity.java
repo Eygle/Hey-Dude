@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,28 +31,55 @@ import com.crouzet.cavalec.heydude.db.MessagesDataSource;
 import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.model.Message;
 import com.crouzet.cavalec.heydude.model.User;
-import com.loopj.android.http.JsonHttpResponseHandler;
+import com.crouzet.cavalec.heydude.utils.Crypto;
 
-import org.apache.http.Header;
-import org.json.JSONObject;
-
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.ShortBufferException;
+
+/**
+ * Activity used to chat with people
+ */
 public class ChatActivity extends ActionBarActivity {
+    /**
+     * Delay after which the call will be end if the user calld doesn't answer
+     */
     private final int TIMEOUT_DELAY = 30000;
+
+    /**
+     * Crypto algo initialised with dest key
+     */
+    private Crypto destCrypto;
 
     private MenuItem callIcon;
     private EditText editTextMsg;
 
+    /**
+     * Printed messages list and adapter
+     */
     private ListView listView;
     private List<Message> msgs;
     private ChatAdapter adapter;
 
+    /**
+     * Database containgin all messages
+     */
     MessagesDataSource db = new MessagesDataSource(this);
 
+    /**
+     * Dialogs
+     */
     private ProgressDialog loader = null;
+    private AlertDialog dialogCall = null;
 
     private Handler handler = new Handler();
 
@@ -64,6 +92,7 @@ public class ChatActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        // Initialise title bar icons and title
         try {
             ActionBar bar = getSupportActionBar();
             bar.setHomeButtonEnabled(true);
@@ -73,11 +102,13 @@ public class ChatActivity extends ActionBarActivity {
             e.printStackTrace();
         }
 
+        // Called when the user accepted a call from HomeView
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getBoolean("ACCEPT_CALL")) {
             callAccepted();
         }
 
+        // Edit text used by user to write messages
         editTextMsg = (EditText)findViewById(R.id.chat_message);
 
         try {
@@ -93,10 +124,11 @@ public class ChatActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
 
+        registerReceiver(keyReceiver, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_KEY));
         registerReceiver(messageReceiver, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_MSG));
         registerReceiver(callAnswerReceiver, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL_ANSWER));
-        registerReceiver(receiveCall, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
-        registerReceiver(receiveHangup, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_HANGUP));
+        registerReceiver(callReceiver, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
+        registerReceiver(hangupReceiver, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_HANGUP));
 
         try {
             db.open();
@@ -109,10 +141,11 @@ public class ChatActivity extends ActionBarActivity {
     protected void onPause() {
         super.onPause();
 
+        unregisterReceiver(keyReceiver);
         unregisterReceiver(messageReceiver);
         unregisterReceiver(callAnswerReceiver);
-        unregisterReceiver(receiveCall);
-        unregisterReceiver(receiveHangup);
+        unregisterReceiver(callReceiver);
+        unregisterReceiver(hangupReceiver);
     }
 
     @Override
@@ -206,6 +239,8 @@ public class ChatActivity extends ActionBarActivity {
         mRunning = true;
         showLoader();
         ApiUtils.call();
+
+        handler.postDelayed(callTimeout, 30000);
     }
 
     private void hangup() {
@@ -219,7 +254,6 @@ public class ChatActivity extends ActionBarActivity {
         if (loader == null) {
             loader = new ProgressDialog(ChatActivity.this);
             loader.setTitle(R.string.call_loader_title);
-            loader.setMessage(String.format(getString(R.string.call_loader_message), HeyDudeSessionVariables.dest.getName()));
             loader.setCancelable(false);
             loader.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel), new DialogInterface.OnClickListener() {
                 @Override
@@ -230,6 +264,7 @@ public class ChatActivity extends ActionBarActivity {
                 }
             });
         }
+        loader.setMessage(String.format(getString(R.string.call_loader_message), HeyDudeSessionVariables.dest.getName()));
         loader.show();
     }
 
@@ -240,16 +275,20 @@ public class ChatActivity extends ActionBarActivity {
     }
 
     private void callAccepted() {
-        callInProgress = true;
-        hideLoader();
-        findViewById(R.id.chat_form).setVisibility(View.VISIBLE);
+        if (loader == null || !loader.isShowing()) {
+            showLoader();
+        }
+        loader.setMessage(getString(R.string.call_secure_loader_message));
 
-        if (callIcon != null)
-            callIcon.setIcon(R.drawable.hangup);
+        handler.removeCallbacks(callTimeout);
+
+        ApiUtils.sendKey(HeyDudeSessionVariables.key);
     }
 
     private void callRefused() {
         hideLoader();
+
+        handler.removeCallbacks(callTimeout);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(String.format(getString(R.string.dialog_call_refused), HeyDudeSessionVariables.dest.getName()))
@@ -257,14 +296,17 @@ public class ChatActivity extends ActionBarActivity {
         builder.create().show();
     }
 
-    private void callTimeout() {
-        hideLoader();
+    private Runnable callTimeout = new Runnable() {
+        public void run() {
+            hangup();
+            hideLoader();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(String.format(getString(R.string.dialog_call_timeout), HeyDudeSessionVariables.dest.getName()))
-                .setNeutralButton(R.string.ok, null);
-        builder.create().show();
-    }
+            AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+            builder.setMessage(String.format(getString(R.string.dialog_call_timeout), HeyDudeSessionVariables.dest.getName()))
+                    .setNeutralButton(R.string.ok, null);
+            builder.create().show();
+        }
+    };
 
     public void sendMessage(View v) {
         final String msg = editTextMsg.getText().toString();
@@ -274,7 +316,11 @@ public class ChatActivity extends ActionBarActivity {
             return;
         }
 
-        ApiUtils.sendMessage(msg);
+        try {
+            ApiUtils.sendMessage(destCrypto.encrypt(msg), destCrypto.getIV());
+        } catch (IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | ShortBufferException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
 
         editTextMsg.setText("");
 
@@ -287,15 +333,49 @@ public class ChatActivity extends ActionBarActivity {
         adapter.notifyDataSetChanged();
     }
 
-    public void receivedMessage(String msg) {
-        Message message = db.createMessage(msg,
-                HeyDudeSessionVariables.dest.getName(),
-                HeyDudeSessionVariables.me.getName(),
-                HeyDudeSessionVariables.dest.getImage(),
-                new Date());
-        msgs.add(message);
-        adapter.notifyDataSetChanged();
+    public void receivedKey(String k) {
+        byte[] key = Base64.decode(k, Base64.DEFAULT);
+
+        try {
+            destCrypto = new Crypto(key);
+        } catch (NoSuchPaddingException|NoSuchAlgorithmException|NoSuchProviderException e) {
+            e.printStackTrace();
+        }
+
+        callInProgress = true;
+        hideLoader();
+        findViewById(R.id.chat_form).setVisibility(View.VISIBLE);
+
+        if (callIcon != null)
+            callIcon.setIcon(R.drawable.hangup);
     }
+
+    public void receivedMessage(String m, String iv) {
+        String msg = null;
+        try {
+            msg = HeyDudeSessionVariables.crypto.decrypt(Base64.decode(m, Base64.DEFAULT), Base64.decode(iv, Base64.DEFAULT));
+            Message message = db.createMessage(msg,
+                    HeyDudeSessionVariables.dest.getName(),
+                    HeyDudeSessionVariables.me.getName(),
+                    HeyDudeSessionVariables.dest.getImage(),
+                    new Date());
+            msgs.add(message);
+            adapter.notifyDataSetChanged();
+        } catch (InvalidKeyException | ShortBufferException | BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Broadcast received when online users data are updated from server
+     */
+    protected BroadcastReceiver keyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            Bundle b = intent.getExtras();
+            receivedKey(b.getString(HeyDudeConstants.BROADCAST_DATA_KEY));
+        }
+    };
 
     /**
      * Broadcast received when online users data are updated from server
@@ -304,7 +384,7 @@ public class ChatActivity extends ActionBarActivity {
         @Override
         public void onReceive(final Context context, Intent intent) {
             Bundle b = intent.getExtras();
-            receivedMessage(b.getString(HeyDudeConstants.BROADCAST_DATA_MSG));
+            receivedMessage(b.getString(HeyDudeConstants.BROADCAST_DATA_MSG), b.getString(HeyDudeConstants.BROADCAST_DATA_IV));
         }
     };
 
@@ -331,7 +411,7 @@ public class ChatActivity extends ActionBarActivity {
     /**
      * Broadcast received when user receive a call
      */
-    protected BroadcastReceiver receiveCall = new BroadcastReceiver() {
+    protected BroadcastReceiver callReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, Intent intent) {
             Bundle b = intent.getExtras();
@@ -353,6 +433,7 @@ public class ChatActivity extends ActionBarActivity {
                         public void onClick(DialogInterface dialog, int id) {
 
                             ApiUtils.answerCall(ApiUtils.ACCEPT_CALL, finalCaller.getId());
+                            ApiUtils.sendKey(HeyDudeSessionVariables.key);
 
                             if (finalCaller.getId().equals(HeyDudeSessionVariables.dest.getId())) {
                                 callAccepted();
@@ -372,28 +453,32 @@ public class ChatActivity extends ActionBarActivity {
                         }
                     });
             // Create the AlertDialog object and show it
-            builder.create().show();
+            dialogCall = builder.create();
+            dialogCall.show();
         }
     };
 
     /**
      * Broadcast received user receive a hangup
      */
-    protected BroadcastReceiver receiveHangup = new BroadcastReceiver() {
+    protected BroadcastReceiver hangupReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, Intent intent) {
             Bundle b = intent.getExtras();
             String id = b.getString(HeyDudeConstants.BROADCAST_DATA_DEST);
 
-            if ((callInProgress || (loader != null && loader.isShowing())) && HeyDudeSessionVariables.dest.getId().equals(id)) {
-                callInProgress = false;
-                hideLoader();
+            if (HeyDudeSessionVariables.dest.getId().equals(id)) {
+                if (dialogCall != null && dialogCall.isShowing()) {
+                    dialogCall.dismiss();
+                } else if (callInProgress) {
+                    callInProgress = false;
 
-                callIcon.setIcon(R.drawable.call);
-                findViewById(R.id.chat_form).setVisibility(View.GONE);
-                Toast.makeText(ChatActivity.this,
-                        String.format(getString(R.string.user_has_hangup),HeyDudeSessionVariables.dest.getName()),
-                        Toast.LENGTH_SHORT).show();
+                    callIcon.setIcon(R.drawable.call);
+                    findViewById(R.id.chat_form).setVisibility(View.GONE);
+                    Toast.makeText(ChatActivity.this,
+                            String.format(getString(R.string.user_has_hangup), HeyDudeSessionVariables.dest.getName()),
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         }
     };

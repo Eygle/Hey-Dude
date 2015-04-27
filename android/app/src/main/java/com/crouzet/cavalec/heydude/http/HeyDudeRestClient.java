@@ -28,7 +28,6 @@ public class HeyDudeRestClient {
         setTimeout(30000);
     }};
 
-
     /**
      * @return an async client when calling from the main thread, otherwise a sync client.
      */

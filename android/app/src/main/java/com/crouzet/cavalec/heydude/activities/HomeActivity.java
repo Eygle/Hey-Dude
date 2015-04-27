@@ -20,18 +20,19 @@ import com.crouzet.cavalec.heydude.adapters.UsersAdapter;
 import com.crouzet.cavalec.heydude.gcm.GcmManager;
 import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.model.User;
-import com.crouzet.cavalec.heydude.services.BackgroundServiceCheckIfUserCallMe;
+import com.crouzet.cavalec.heydude.utils.Crypto;
 import com.crouzet.cavalec.heydude.utils.UserUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+
+import javax.crypto.NoSuchPaddingException;
 
 
 public class HomeActivity extends GooglePlusSigninActivity {
-
-    //private static Intent fgBackgroundServiceUpdateOnlineUsers;
-    //private static Intent fgBackgroundServiceCheckCalls;
 
     private UsersAdapter adapter;
 
@@ -44,16 +45,16 @@ public class HomeActivity extends GooglePlusSigninActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        try {
+            HeyDudeSessionVariables.key = HeyDudeSessionVariables.crypto.generateRandomBytes(32);
+            HeyDudeSessionVariables.crypto = new Crypto(HeyDudeSessionVariables.key);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+
         setContentView(R.layout.activity_home);
 
         new GcmManager(this);
-
-//        if (fgBackgroundServiceUpdateOnlineUsers == null) {
-//            fgBackgroundServiceUpdateOnlineUsers = new Intent(this, BackgroundServiceUpdateOnlineUsers.class);
-//        }
-//        if (fgBackgroundServiceCheckCalls == null) {
-//            fgBackgroundServiceCheckCalls = new Intent(this, BackgroundServiceCheckIfUserCallMe.class);
-//        }
 
         initialiseGooglePlus();
         initialiseOnlineUsersList();
@@ -66,13 +67,6 @@ public class HomeActivity extends GooglePlusSigninActivity {
         registerReceiver(updateBroadcast, new IntentFilter(HeyDudeConstants.BROADCAST_REFRESH_USER_LIST));
         registerReceiver(receiveCall, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_CALL));
         registerReceiver(receiveHangup, new IntentFilter(HeyDudeConstants.BROADCAST_RECEIVE_HANGUP));
-
-//        if (fgBackgroundServiceUpdateOnlineUsers != null && !BackgroundServiceUpdateOnlineUsers.mRunning) {
-//            startService(fgBackgroundServiceUpdateOnlineUsers);
-//        }
-//        if (fgBackgroundServiceCheckCalls != null && !BackgroundServiceCheckIfUserCallMe.mRunning) {
-//            startService(fgBackgroundServiceCheckCalls);
-//        }
 
         handler = new Handler();
         handler.post(login);
@@ -92,13 +86,6 @@ public class HomeActivity extends GooglePlusSigninActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
-//        if (fgBackgroundServiceUpdateOnlineUsers != null) {
-//            stopService(fgBackgroundServiceUpdateOnlineUsers);
-//        }
-//        if (fgBackgroundServiceCheckCalls != null) {
-//            stopService(fgBackgroundServiceCheckCalls);
-//        }
     }
 
     @Override
@@ -192,6 +179,7 @@ public class HomeActivity extends GooglePlusSigninActivity {
                             HeyDudeSessionVariables.dest = caller;
 
                             ApiUtils.answerCall(ApiUtils.ACCEPT_CALL, caller.getId());
+                            ApiUtils.sendKey(HeyDudeSessionVariables.key);
 
                             Intent intent = new Intent(context, ChatActivity.class);
                             intent.putExtra("ACCEPT_CALL", true);

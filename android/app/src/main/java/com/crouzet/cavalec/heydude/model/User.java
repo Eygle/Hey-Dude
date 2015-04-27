@@ -10,6 +10,7 @@ public class User implements Serializable {
     private String name;
     private String email;
     private String image;
+    private byte[] key;
 
     public User(String gId, String name) {
         this.id = gId;
@@ -38,6 +39,10 @@ public class User implements Serializable {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public void setKey(byte[] key) {
+        this.key = key;
     }
 
     @Override

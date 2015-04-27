@@ -1,6 +1,7 @@
 package com.crouzet.cavalec.heydude;
 
 import com.crouzet.cavalec.heydude.model.User;
+import com.crouzet.cavalec.heydude.utils.Crypto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,4 +17,7 @@ public class HeyDudeSessionVariables {
 
     public static List<User> onlineUsers = new ArrayList<>();
 
+    // Crypto
+    public static Crypto crypto;
+    public static byte[] key;
 }

@@ -1,5 +1,7 @@
 package com.crouzet.cavalec.heydude;
 
+import com.crouzet.cavalec.heydude.utils.Crypto;
+
 /**
  * Created by Johan on 19/02/2015.
  */

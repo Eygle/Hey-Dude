@@ -29,10 +29,11 @@
 
     <string name="dialog_call_refused">%s refuse your call.</string>
     <string name="dialog_call_timeout">%s doesn\'t answer your call so we ended it.</string>
-    <string name="user_has_hangup">%s has hangup</string>
+    <string name="user_has_hangup">%s ended the call</string>
 
     <string name="call_loader_title">Call in progress&#8230;</string>
     <string name="call_loader_message">Waiting for %s to accept the call.</string>
+    <string name="call_secure_loader_message">Initializing encrypted call.</string>
 
     <array name="message_actions_array">
         <item>Copy text</item>

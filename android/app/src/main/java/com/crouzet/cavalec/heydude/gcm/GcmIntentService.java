@@ -61,6 +61,11 @@ public class GcmIntentService extends IntentService {
             case "send_msg":
                 intent = new Intent(HeyDudeConstants.BROADCAST_RECEIVE_MSG);
                 intent.putExtra(HeyDudeConstants.BROADCAST_DATA_MSG, extras.getString("message"));
+                intent.putExtra(HeyDudeConstants.BROADCAST_DATA_IV, extras.getString("iv"));
+                break;
+            case "send_key":
+                intent = new Intent(HeyDudeConstants.BROADCAST_RECEIVE_KEY);
+                intent.putExtra(HeyDudeConstants.BROADCAST_DATA_KEY, extras.getString("key"));
                 break;
             case "refresh_user_list":
                 intent = new Intent(HeyDudeConstants.BROADCAST_REFRESH_USER_LIST);

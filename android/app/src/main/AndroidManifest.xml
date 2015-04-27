@@ -42,9 +42,6 @@
             android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name=".services.BackgroundServiceUpdateOnlineUsers" />
-        <service android:name=".services.BackgroundServiceCheckIfUserCallMe" />
-
         <receiver
             android:name=".gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

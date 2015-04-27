@@ -13,7 +13,7 @@ try {
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Check if the parameters are present and correct. Throw an exception otherwise
-        Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hang_up", "answer", "delete_account", "sendMessage")));
+        Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hang_up", "answer", "delete_account", "sendMessage", "sendKey")));
 
         // Set the mock
         $mock = new Mock();
@@ -85,10 +85,18 @@ try {
                 }
                 break;
             case "sendMessage":
-                Utils::checkParams($_POST, array("destGId", "message"));
+                Utils::checkParams($_POST, array("destGId", "message", "iv"));
 
                 $token = array($db->getToken($_POST['destGId']));
-                $msg = array("action"=>"send_msg", "message" => $_POST['message']);
+                $msg = array("action"=>"send_msg", "message" => $_POST['message'], "iv" => $_POST["iv"]);
+
+                Utils::sendPush($token, $msg);
+                break;
+            case "sendKey":
+                Utils::checkParams($_POST, array("destGId", "key"));
+
+                $token = array($db->getToken($_POST['destGId']));
+                $msg = array("action"=>"send_key", "key" => $_POST['key']);
 
                 Utils::sendPush($token, $msg);
                 break;

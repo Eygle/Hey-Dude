@@ -1,10 +1,5 @@
 package com.crouzet.cavalec.heydude.utils;
 
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.util.Log;
-
-import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.crouzet.cavalec.heydude.HeyDudeSessionVariables;
 import com.crouzet.cavalec.heydude.model.User;
 

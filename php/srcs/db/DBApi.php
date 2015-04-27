@@ -48,55 +48,6 @@ class DBApi extends DAO
         ));
     }
 
-//    public function call($gid, $destgid)
-//    {
-//        $stmt = $this->pdo->prepare("
-//        INSERT
-//          INTO calls(caller_gid, dest_gid, timestamp, status)
-//          VALUES(:gid, :destgid, NOW(), 'wait');
-//        ");
-//
-//        $stmt->execute(array(
-//            ":gid" => $gid,
-//            ":destgid" => $destgid
-//        ));
-//    }
-//
-//    public function hangup($gid, $destgid)
-//    {
-//        $stmt = $this->pdo->prepare("
-//        DELETE
-//          FROM calls
-//          WHERE caller_gid = :gid
-//          AND dest_gid = :destgid;
-//        INSERT
-//          INTO online_users(gid, timestamp)
-//          VALUES(:gid, NOW());
-//        INSERT
-//          INTO online_users(gid, timestamp)
-//          VALUES(:destgid, NOW());
-//        ");;
-//
-//        $stmt->execute(array(
-//            ":gid" => $gid,
-//            ":destgid" => $destgid
-//        ));
-//    }
-//
-//    public function answer($gid, $destgid, $status)
-//    {
-//        $stmt = $this->pdo->prepare("UPDATE calls
-//          SET status=:status
-//          WHERE caller_gid = :destgid
-//          AND dest_gid = :gid;");
-//
-//        $stmt->execute(array(
-//            "gid" => $gid,
-//            "destgid" => $destgid,
-//            "status" => $status
-//        ));
-//    }
-
     public function deleteAccount($gid)
     {
         $stmt = $this->pdo->prepare("DELETE FROM users WHERE gid = :gid;");
@@ -136,64 +87,6 @@ class DBApi extends DAO
         $stmt->execute();
         return array("users" => $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
-
-//    public function callStatus($gid, $destgid)
-//    {
-//        $this->pdo->exec("UPDATE calls
-//            SET status = 'timeout'
-//            WHERE TIMESTAMPDIFF(SECOND, timestamp, NOW()) >= ".TIMEOUT_CALLS);
-//
-//        $stmt = $this->pdo->prepare("
-//        SELECT status
-//          FROM calls
-//          WHERE caller_gid = :gid
-//          AND dest_gid = :destgid;
-//        ");
-//
-//        $stmt->execute(array(
-//            ":gid" => $gid,
-//            ":destgid" => $destgid
-//        ));
-//
-//        $status = $stmt->fetch(PDO::FETCH_ASSOC);
-//
-//        if ($status['status'] == 'accept') {
-//            $stmt = $this->pdo->prepare("
-//            SELECT pubk
-//              FROM users
-//              WHERE gid = :destgid;
-//            ");
-//
-//            $stmt->execute(array(
-//                ":destgid" => $destgid
-//            ));
-//            $pubk = $stmt->fetch(PDO::FETCH_ASSOC);
-//            $status["key"] = $pubk["pubk"];
-//        }
-//        if ($status["status"] != "wait" && $status["status"] != "deliver") {
-//            $stmt = $this->pdo->prepare("DELETE FROM calls WHERE caller_gid = :gid AND dest_gid = :destgid");
-//            $stmt->execute(array(":gid" => $gid, ":destgid" => $destgid));
-//        }
-//        return $status;
-//    }
-//
-//    public function whoIsCallingMe($gid)
-//    {
-//        $stmt = $this->pdo->prepare("
-//        SELECT users.gid AS gId, users.image, users.name, users.email
-//          FROM calls
-//          JOIN users
-//          ON users.gid = calls.caller_gid
-//          WHERE dest_gid = :gid AND status = 'wait';
-//        UPDATE calls SET status = 'deliver' WHERE dest_gid = :gid;
-//        ");
-//
-//        $stmt->execute(array(
-//            ":gid" => $gid,
-//        ));
-//
-//        return $stmt->fetch(PDO::FETCH_ASSOC);
-//    }
 
     public function getToken($gid) {
         $stmt = $this->pdo->prepare("SELECT token FROM users WHERE gid = :gid;");
