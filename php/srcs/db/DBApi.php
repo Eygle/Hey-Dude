@@ -98,6 +98,16 @@ class DBApi extends DAO
         return $res["token"];
     }
 
+    public function getKey($gid) {
+        $stmt = $this->pdo->prepare("SELECT pubk FROM users WHERE gid = :gid;");
+        $stmt->execute(array(
+            ":gid" => $gid,
+        ));
+
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $res["pubk"];
+    }
+
     public function getOnlineUsersTokens() {
         $stmt = $this->pdo->prepare("SELECT token FROM users WHERE gid IN (SELECT gid FROM online_users);");
         $stmt->execute();

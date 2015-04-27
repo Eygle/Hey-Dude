@@ -82,6 +82,10 @@ public class GcmIntentService extends IntentService {
             case "answer":
                 intent = new Intent(HeyDudeConstants.BROADCAST_RECEIVE_CALL_ANSWER);
                 intent.putExtra(HeyDudeConstants.BROADCAST_DATA_CALL_STATUS, extras.getString("status"));
+                String key = extras.getString("key", null);
+                if (key != null) {
+                    intent.putExtra(HeyDudeConstants.BROADCAST_DATA_KEY, key);
+                }
                 break;
         }
 

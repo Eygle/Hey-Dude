@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,7 +32,7 @@ import com.crouzet.cavalec.heydude.db.MessagesDataSource;
 import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.model.Message;
 import com.crouzet.cavalec.heydude.model.User;
-import com.crouzet.cavalec.heydude.utils.Crypto;
+import com.crouzet.cavalec.heydude.utils.CryptoAES;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -58,7 +59,8 @@ public class ChatActivity extends ActionBarActivity {
     /**
      * Crypto algo initialised with dest key
      */
-    private Crypto destCrypto;
+    private CryptoAES cryptoAES;
+    private byte[] key;
 
     private MenuItem callIcon;
     private EditText editTextMsg;
@@ -105,7 +107,8 @@ public class ChatActivity extends ActionBarActivity {
         // Called when the user accepted a call from HomeView
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getBoolean("ACCEPT_CALL")) {
-            callAccepted();
+            showLoader();
+            loader.setMessage(getString(R.string.call_secure_loader_message));
         }
 
         // Edit text used by user to write messages
@@ -236,6 +239,14 @@ public class ChatActivity extends ActionBarActivity {
     }
 
     private void call() {
+        Log.d("OSEF", "CALL");
+        try {
+            key = cryptoAES.generateRandomBytes(32);
+            cryptoAES = new CryptoAES(key);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
+
         mRunning = true;
         showLoader();
         ApiUtils.call();
@@ -244,6 +255,7 @@ public class ChatActivity extends ActionBarActivity {
     }
 
     private void hangup() {
+        Log.d("OSEF", "Hang up");
         ApiUtils.hangup();
 
         callIcon.setIcon(R.drawable.call);
@@ -274,15 +286,21 @@ public class ChatActivity extends ActionBarActivity {
         }
     }
 
-    private void callAccepted() {
-        if (loader == null || !loader.isShowing()) {
-            showLoader();
-        }
-        loader.setMessage(getString(R.string.call_secure_loader_message));
+    private void callAccepted(String pubK) {
+        ApiUtils.sendKey(key); // Todo encrypt key with pubK
 
+        initCall();
+    }
+
+    private void initCall() {
         handler.removeCallbacks(callTimeout);
 
-        ApiUtils.sendKey(HeyDudeSessionVariables.key);
+        callInProgress = true;
+        hideLoader();
+        findViewById(R.id.chat_form).setVisibility(View.VISIBLE);
+
+        if (callIcon != null)
+            callIcon.setIcon(R.drawable.hangup);
     }
 
     private void callRefused() {
@@ -317,7 +335,7 @@ public class ChatActivity extends ActionBarActivity {
         }
 
         try {
-            ApiUtils.sendMessage(destCrypto.encrypt(msg), destCrypto.getIV());
+            ApiUtils.sendMessage(cryptoAES.encrypt(msg), cryptoAES.getIV());
         } catch (IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | ShortBufferException | InvalidKeyException e) {
             e.printStackTrace();
         }
@@ -334,10 +352,10 @@ public class ChatActivity extends ActionBarActivity {
     }
 
     public void receivedKey(String k) {
-        byte[] key = Base64.decode(k, Base64.DEFAULT);
+        key = Base64.decode(k, Base64.DEFAULT); // TODO decrypt key with private key (tout le base64)
 
         try {
-            destCrypto = new Crypto(key);
+            cryptoAES = new CryptoAES(key);
         } catch (NoSuchPaddingException|NoSuchAlgorithmException|NoSuchProviderException e) {
             e.printStackTrace();
         }
@@ -353,7 +371,7 @@ public class ChatActivity extends ActionBarActivity {
     public void receivedMessage(String m, String iv) {
         String msg = null;
         try {
-            msg = HeyDudeSessionVariables.crypto.decrypt(Base64.decode(m, Base64.DEFAULT), Base64.decode(iv, Base64.DEFAULT));
+            msg = cryptoAES.decrypt(Base64.decode(m, Base64.DEFAULT), Base64.decode(iv, Base64.DEFAULT));
             Message message = db.createMessage(msg,
                     HeyDudeSessionVariables.dest.getName(),
                     HeyDudeSessionVariables.me.getName(),
@@ -399,7 +417,7 @@ public class ChatActivity extends ActionBarActivity {
 
             switch (status) {
                 case "accept":
-                    callAccepted();
+                    callAccepted(b.getString(HeyDudeConstants.BROADCAST_DATA_KEY));
                     break;
                 case "refuse":
                     callRefused();
@@ -433,10 +451,11 @@ public class ChatActivity extends ActionBarActivity {
                         public void onClick(DialogInterface dialog, int id) {
 
                             ApiUtils.answerCall(ApiUtils.ACCEPT_CALL, finalCaller.getId());
-                            ApiUtils.sendKey(HeyDudeSessionVariables.key);
+                            showLoader();
+                            loader.setMessage(getString(R.string.call_secure_loader_message));
 
                             if (finalCaller.getId().equals(HeyDudeSessionVariables.dest.getId())) {
-                                callAccepted();
+                                initCall();
                             } else {
                                 HeyDudeSessionVariables.dest = finalCaller;
                                 Intent intent = new Intent(context, ChatActivity.class);
