@@ -256,6 +256,7 @@ public class ChatActivity extends ActionBarActivity {
 
     private void hangup() {
         Log.d("OSEF", "Hang up");
+        callInProgress = false;
         ApiUtils.hangup();
 
         callIcon.setIcon(R.drawable.call);
