@@ -13,11 +13,14 @@ import com.loopj.android.http.SyncHttpClient;
 
 /**
  * Created by Johan on 19/02/2015.
+ * Client used to send commands to server
  */
 public class HeyDudeRestClient {
     private static final String TAG = HeyDudeRestClient.class.getSimpleName();
 
+    // Server host
     public final static String HOST = HeyDudeApplication.host;
+    // Server API
     public final static String API = HOST + "/heydude/api.php";
 
     private static AsyncHttpClient asyncHttpClient = new AsyncHttpClient(){{
@@ -41,6 +44,11 @@ public class HeyDudeRestClient {
 
     /**
      * GET Request
+     * @param url url to reach
+     * @param params get parameters
+     * @param responseHandler callback for answer
+     * @param timeout request timeout
+     * @return request handler
      */
     public static RequestHandle get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
         params.put("gId", HeyDudeSessionVariables.me.getId());
@@ -57,6 +65,13 @@ public class HeyDudeRestClient {
     }
 
 
+    /**
+     * Send POST request
+     * @param url url to reach
+     * @param params post parameters
+     * @param responseHandler callback for answer
+     * @param httpClient client used to send request
+     */
     private static void doPost(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, AsyncHttpClient httpClient) {
         params.put("gId", HeyDudeSessionVariables.me.getId());
 
@@ -70,7 +85,10 @@ public class HeyDudeRestClient {
 
 
     /**
-     * POST Request
+     * Prepare POST request
+     * @param url url to reach
+     * @param params post parameters
+     * @param responseHandler callback for answer
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         doPost(url, params, responseHandler, getClient());
@@ -78,7 +96,11 @@ public class HeyDudeRestClient {
 
 
     /**
-     * POST Request with timeout
+     * Prepare POST request
+     * @param url url to reach
+     * @param params post parameters
+     * @param responseHandler callback for answer
+     * @param timeout request timeout
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
         AsyncHttpClient httpClient = getClient();

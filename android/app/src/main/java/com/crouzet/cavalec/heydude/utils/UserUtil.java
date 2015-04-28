@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Created by Johan on 16/04/2015.
+ * Generic utils methods
  */
 public class UserUtil {
     /**
@@ -20,8 +21,8 @@ public class UserUtil {
     public static class ManageDataFromOnlineUsers {
         /**
          * Update current list of online users according to the server answer
-         * @param data
-         * @return
+         * @param data json data
+         * @return whether or not the operation was successful
          */
         public static boolean update(JSONObject data) {
             boolean response = false;
@@ -72,8 +73,8 @@ public class UserUtil {
 
         /**
          * Add the users presents on given list and absent from current list and remove users absent from given list and present in current list
-         * @param list
-         * @return
+         * @param list new user list
+         * @return whether or not the operation was successful
          */
         private static boolean synchronizeUsersLists(List<User> list) {
             boolean response = false;

@@ -4,14 +4,27 @@ import java.util.Date;
 
 /**
  * Created by Johan on 19/02/2015.
+ * Message model
  */
 public class Message {
+    // Message id
     private long id;
+
+    // Message text
     private String message;
+
+    // Message author
     private String authorName;
+
+    // Message receiver
     private String destName;
+
+    // Author image
     private String image;
+
+    // Message date
     private Date date;
+
 
     public long getId() {
         return id;

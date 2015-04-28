@@ -20,6 +20,7 @@ import java.io.IOException;
 
 /**
  * Created by Johan on 16/04/2015.
+ * Google Cloud Manager
  */
 public class GcmManager {
     private final static String TAG = GcmManager.class.getSimpleName();

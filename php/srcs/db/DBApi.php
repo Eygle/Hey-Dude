@@ -22,7 +22,7 @@ class DBApi extends DAO
         INSERT
           INTO users(gid, name, image, email, pubk, token)
           VALUES(:gid, :name, :image, :email, :pubk, :token)
-          ON DUPLICATE KEY UPDATE token=VALUES(token);
+          ON DUPLICATE KEY UPDATE token=VALUES(token), pubk=VALUES(pubk);
         INSERT
           INTO online_users(gid, timestamp)
           VALUES(:gid, NOW())

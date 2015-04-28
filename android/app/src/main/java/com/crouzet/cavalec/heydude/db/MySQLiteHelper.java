@@ -7,6 +7,7 @@ import android.util.Log;
 
 /**
  * Created by Johan on 04/03/2015.
+ * Database administration
  */
 public class MySQLiteHelper extends SQLiteOpenHelper {
     public static final String TABLE_MESSAGES = "messages";

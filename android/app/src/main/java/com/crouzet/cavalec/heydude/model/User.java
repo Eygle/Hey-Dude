@@ -4,13 +4,20 @@ import java.io.Serializable;
 
 /**
  * Created by Johan on 19/02/2015.
+ * User model
  */
 public class User implements Serializable {
+    // User id
     private String id;
+
+    // User name
     private String name;
+
+    // User email
     private String email;
+
+    // User image
     private String image;
-    private byte[] key;
 
     public User(String gId, String name) {
         this.id = gId;
@@ -39,10 +46,6 @@ public class User implements Serializable {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public void setKey(byte[] key) {
-        this.key = key;
     }
 
     @Override

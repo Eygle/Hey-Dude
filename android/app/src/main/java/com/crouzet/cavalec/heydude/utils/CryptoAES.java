@@ -16,22 +16,41 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Created by Johan on 27/04/2015.
+ * Cryptographic tool that encrypt and decrypt
+ * Use AES 256 bits CBC mode with PKCS7 padding
  */
 public class CryptoAES {
     private Cipher cipher;
     private SecretKeySpec key;
 
+    // Initialization vector
     private byte[] iv;
 
     private static SecureRandom sr = new SecureRandom();
 
+    /**
+     * Constructor
+     * @param key symmetric AES key
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     */
     public CryptoAES(byte[] key) throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException {
         //Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-        // si tu veux utiliser bouncy castle faut set la lib avec la ligne du dessus et rajouter le BC au Cipher.getInstance()
         this.key = new SecretKeySpec(key, "AES");
         cipher = Cipher.getInstance("AES/CBC/PKCS7Padding"); //, "BC");
     }
 
+    /**
+     * Encrypt text using AES
+     * @param text plaintext
+     * @return cipher text
+     * @throws InvalidKeyException
+     * @throws ShortBufferException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws InvalidAlgorithmParameterException
+     */
     public byte[] encrypt(String text) throws InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         iv = generateRandomBytes(16);
 
@@ -42,11 +61,21 @@ public class CryptoAES {
         int ctLength = cipher.update(input, 0, input.length, cipherText, 0);
 
         ctLength += cipher.doFinal(cipherText, ctLength);
-        System.out.println(new String(cipherText));
-        System.out.println(ctLength);
+
         return cipherText;
     }
 
+    /**
+     * Decrypt message using AES
+     * @param input cipher text
+     * @param iv Initialization vector
+     * @return plaintext
+     * @throws InvalidKeyException
+     * @throws ShortBufferException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws InvalidAlgorithmParameterException
+     */
     public String decrypt(byte[] input, byte[] iv) throws InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
 
@@ -55,16 +84,21 @@ public class CryptoAES {
 
         ptLength += cipher.doFinal(plainText, ptLength);
 
-        System.out.println(new String(plainText).substring(0, ptLength));
-        System.out.println(ptLength);
-
         return new String(plainText).substring(0, ptLength);
     }
 
+    /**
+     * @return Initialization vector
+     */
     public byte[] getIV() {
         return iv;
     }
 
+    /**
+     * Used to generate key and iv
+     * @param length length of generated array of bytes
+     * @return random bites array
+     */
     public static byte[] generateRandomBytes(int length) {
         byte[] b = new byte[length];
         sr.nextBytes(b);

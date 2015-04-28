@@ -2,6 +2,7 @@ package com.crouzet.cavalec.heydude;
 
 /**
  * Created by Johan on 03/03/2015.
+ * Application immutable data
  */
 public class HeyDudeConstants {
     public final static String TAG = HeyDudeConstants.class.getPackage().getName();

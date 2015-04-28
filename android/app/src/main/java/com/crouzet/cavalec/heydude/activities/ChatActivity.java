@@ -33,11 +33,13 @@ import com.crouzet.cavalec.heydude.http.ApiUtils;
 import com.crouzet.cavalec.heydude.model.Message;
 import com.crouzet.cavalec.heydude.model.User;
 import com.crouzet.cavalec.heydude.utils.CryptoAES;
+import com.crouzet.cavalec.heydude.utils.CryptoRSA;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +59,8 @@ public class ChatActivity extends ActionBarActivity {
     // Crypto algo initialised with symmetric key
     private CryptoAES cryptoAES;
     private byte[] key;
+
+    private CryptoRSA cryptoRSA = CryptoRSA.getInstance();
 
     private MenuItem callIcon;
     private EditText editTextMsg;
@@ -296,7 +300,11 @@ public class ChatActivity extends ActionBarActivity {
      * @param pubK asymmetric public key of receiver
      */
     private void callAccepted(String pubK) {
-        ApiUtils.sendKey(key); // Todo encrypt key with pubK
+        try {
+            ApiUtils.sendKey(cryptoRSA.encrypt(key, Base64.decode(pubK, Base64.DEFAULT)));
+        } catch (BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
 
         initCall();
     }
@@ -353,7 +361,7 @@ public class ChatActivity extends ActionBarActivity {
      * Before being send th message is encrypted with symmetric key using AES
      * The messages are displayed and store in database
      */
-    public void sendMessage() {
+    public void sendMessage(View v) {
         final String msg = editTextMsg.getText().toString();
 
         if (msg.length() == 0) {
@@ -380,12 +388,17 @@ public class ChatActivity extends ActionBarActivity {
 
     /**
      * Called when receiving the symmetric RSA key encrypted with asymmetric RSA public key
-     * @param k Base 64 encrypted key sended by corespondent
+     * @param k Base 64 encrypted key sanded by corespondent
      */
     public void receivedKey(String k) {
-        // Get AES by decrypting it with RSA and private key
-        key = Base64.decode(k, Base64.DEFAULT); // TODO decrypt key with private key (tout le base64)
+        // Get AES key by decrypting it with RSA and private key
+        try {
+            key = cryptoRSA.decrypt(Base64.decode(k, Base64.DEFAULT));
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
 
+        // Initialise AES crypto tool with the symmetric key
         try {
             cryptoAES = new CryptoAES(key);
         } catch (NoSuchPaddingException|NoSuchAlgorithmException|NoSuchProviderException e) {

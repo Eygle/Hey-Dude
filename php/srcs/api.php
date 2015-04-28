@@ -69,7 +69,7 @@ try {
                 Utils::checkParams($_POST, array("status", "gId", "destGId"), array(array("accept", "refuse")));
 
                 if (!$mockModeOn) {
-                    if ($_POST["answer"]) {
+                    if ($_POST["status"] == "accept") {
                         Utils::sendPush(array($db->getToken($_POST['destGId'])), array("action" => "answer", "dest" => $_POST['gId'], "status" => $_POST["status"], "key" => $db->getKey($_POST['gId'])));
                     } else {
                         Utils::sendPush(array($db->getToken($_POST['destGId'])), array("action" => "answer", "dest" => $_POST['gId'], "status" => $_POST["status"]));

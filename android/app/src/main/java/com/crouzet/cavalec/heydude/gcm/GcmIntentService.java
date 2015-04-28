@@ -8,6 +8,9 @@ import android.util.Log;
 import com.crouzet.cavalec.heydude.HeyDudeConstants;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+/**
+ * Google Cloud Messaging Intent and broadcast manager
+ */
 public class GcmIntentService extends IntentService {
 
 	private static final String TAG = GcmIntentService.class.getSimpleName();

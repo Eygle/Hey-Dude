@@ -16,10 +16,12 @@ import java.util.List;
 
 /**
  * Created by Johan on 19/02/2015.
+ * Adapter used to manage and display online users
  */
 public class UsersAdapter extends ArrayAdapter<User> {
-
+    // List of users
     private List<User> list;
+    // Parent context
     private Context context;
 
     public UsersAdapter(Context context, List<User> values) {
@@ -29,6 +31,13 @@ public class UsersAdapter extends ArrayAdapter<User> {
         this.context = context;
     }
 
+    /**
+     * Return view for each user
+     * @param position position in list view
+     * @param convertView previous view
+     * @param parent parent
+     * @return new view
+     */
     public View getView(int position, View convertView, ViewGroup parent) {
         View rowView = convertView;
 
@@ -61,6 +70,9 @@ public class UsersAdapter extends ArrayAdapter<User> {
         return rowView;
     }
 
+    /**
+     * Used for list view optimisation
+     */
     static class ViewHolder {
         public TextView name, email;
         public ImageView image;

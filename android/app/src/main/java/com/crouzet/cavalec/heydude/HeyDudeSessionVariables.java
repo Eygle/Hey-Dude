@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Created by Johan on 19/02/2015.
+ * Application dynamic data
  */
 public class HeyDudeSessionVariables {
     public static String token;

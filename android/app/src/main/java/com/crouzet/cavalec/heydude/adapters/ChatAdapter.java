@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Created by Johan on 26/02/2015.
- * Adapter used to manage and display Messages in chat
+ * Adapter used to manage and display messages in chat
  */
 public class ChatAdapter extends ArrayAdapter<Message> {
 
@@ -46,7 +46,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
     }
 
     /**
-     * Return view of each message
+     * Return view for each message
      * @param position position in list view
      * @param convertView previous view
      * @param parent parent
