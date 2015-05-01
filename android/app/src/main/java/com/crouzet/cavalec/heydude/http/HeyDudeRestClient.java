@@ -11,6 +11,11 @@ import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+
+import java.security.KeyStore;
+
 /**
  * Created by Johan on 19/02/2015.
  * Client used to send commands to server
@@ -43,29 +48,6 @@ public class HeyDudeRestClient {
     }
 
     /**
-     * GET Request
-     * @param url url to reach
-     * @param params get parameters
-     * @param responseHandler callback for answer
-     * @param timeout request timeout
-     * @return request handler
-     */
-    public static RequestHandle get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
-        params.put("gId", HeyDudeSessionVariables.me.getId());
-
-        if (HeyDudeApplication.mock) {
-            params.add("mock", "true");
-        }
-
-        Log.v(TAG, "Send GET Request: " + HeyDudeRestClient.API + "?" + params.toString());
-
-        final AsyncHttpClient httpClient = getClient();
-        httpClient.setTimeout(timeout);
-        return httpClient.get(url, params, responseHandler);
-    }
-
-
-    /**
      * Send POST request
      * @param url url to reach
      * @param params post parameters
@@ -91,7 +73,20 @@ public class HeyDudeRestClient {
      * @param responseHandler callback for answer
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        doPost(url, params, responseHandler, getClient());
+        AsyncHttpClient httpClient = getClient();
+
+        try {
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(null, null);
+            MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
+            sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+            httpClient.setSSLSocketFactory(sf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        doPost(url, params, responseHandler, httpClient);
     }
 
 
@@ -103,7 +98,20 @@ public class HeyDudeRestClient {
      * @param timeout request timeout
      */
     public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler, int timeout) {
+        //AsyncHttpClient httpClient = getClient();
         AsyncHttpClient httpClient = getClient();
+
+        try {
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(null, null);
+            MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
+            sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+            httpClient.setSSLSocketFactory(sf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         httpClient.setTimeout(timeout);
         doPost(url, params, responseHandler, httpClient);
     }
