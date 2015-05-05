@@ -1,5 +1,6 @@
 package com.crouzet.cavalec.heydude.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -19,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -264,6 +266,9 @@ public class ChatActivity extends ActionBarActivity {
 
         callIcon.setIcon(R.drawable.call);
         findViewById(R.id.chat_form).setVisibility(View.GONE);
+
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
     }
 
     /**
@@ -540,10 +545,7 @@ public class ChatActivity extends ActionBarActivity {
                 if (dialogCall != null && dialogCall.isShowing()) {
                     dialogCall.dismiss();
                 } else if (callInProgress) {
-                    callInProgress = false;
-
-                    callIcon.setIcon(R.drawable.call);
-                    findViewById(R.id.chat_form).setVisibility(View.GONE);
+                    hangup();
                     Toast.makeText(ChatActivity.this,
                             String.format(getString(R.string.user_has_hangup), HeyDudeSessionVariables.dest.getName()),
                             Toast.LENGTH_SHORT).show();

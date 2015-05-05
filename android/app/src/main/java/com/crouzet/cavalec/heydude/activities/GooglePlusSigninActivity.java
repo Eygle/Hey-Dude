@@ -208,6 +208,7 @@ public class GooglePlusSigninActivity extends ActionBarActivity implements Googl
      * Method to resolve any signin errors
      * */
     private void resolveSignInError() {
+        if (mConnectionResult == null) return;
         if (mConnectionResult.hasResolution()) {
             try {
                 mIntentInProgress = true;

@@ -85,7 +85,6 @@ public class ApiUtils {
     public static void deleteAccount() {
         RequestParams params = new RequestParams();
         params.add("action", "delete_account");
-        params.add("destGId", HeyDudeSessionVariables.dest.getId());
 
         HeyDudeRestClient.post(HeyDudeRestClient.API, params, new JsonHttpResponseHandler());
     }

@@ -1,9 +1,0 @@
-All client -> server communication:
-	Login
-	Register
-	connectToUser
-	closeConnection
-	connectionStatus
-
-Add button in ChatActivity Title to connect to dest and display status in popup with loading
-Add ability to cancel call and a timeout (30 secs)
