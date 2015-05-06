@@ -363,7 +363,7 @@ public class ChatActivity extends ActionBarActivity {
 
     /**
      * Get the message from EditText and send it to receiver
-     * Before being send th message is encrypted with symmetric key using AES
+     * Before being send the message is encrypted with symmetric key using AES
      * The messages are displayed and store in database
      */
     public void sendMessage(View v) {
