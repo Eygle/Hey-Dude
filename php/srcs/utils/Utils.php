@@ -6,7 +6,18 @@
  * Time: 18:20
  */
 
+/**
+ * Class Utils to test Android functionality
+ */
 class Utils {
+    /**
+     * Test function to check parameters
+     *
+     * @param $type
+     * @param $params
+     * @param $val
+     * @throws Exception
+     */
     public static function checkParams($type, $params, $val = null) {
         if (is_array($params)) {
             foreach ($params as $i => $p) {
@@ -17,12 +28,24 @@ class Utils {
         }
     }
 
+    /**
+     * Test function to test password
+     *
+     * @param $password
+     * @throws Exception
+     */
     public static function checkPassword($password) {
         if ($password != "b1889094079e73358b72111e680ff087") {
             throw new Exception("Bad password.");
         }
     }
 
+    /**
+     * Test function to test online users on
+     *
+     * @param $db
+     * @param null $gId
+     */
     public static function sendOnlineUsersList($db, $gId = null) {
         $tokens = $db->getOnlineUsersTokens();
         if (count($tokens) > 0) {
@@ -30,6 +53,12 @@ class Utils {
         }
     }
 
+    /**
+     * Function to send push notification on android
+     *
+     * @param $tokens
+     * @param $data
+     */
     public static function sendPush($tokens, $data) {
         // Set POST variables
         $url = 'https://android.googleapis.com/gcm/send';
@@ -70,6 +99,15 @@ class Utils {
         echo $result;
     }
 
+    /**
+     * Test function to check parameters
+     *
+     * @param $t
+     * @param $p
+     * @param $val
+     * @param int $i
+     * @throws Exception
+     */
     private static function checkParam($t, $p, $val, $i = 0) {
         if (!isset($t[$p]) || empty($t[$p])) {
             throw new Exception("Parameter $p do not exist or is empty.");
@@ -82,6 +120,14 @@ class Utils {
         }
     }
 
+    /**
+     * Test function to test parameters value
+     *
+     * @param $t
+     * @param $p
+     * @param $val
+     * @throws Exception
+     */
     private static function checkVal($t, $p, $val) {
         if (is_array($val) && !in_array($t[$p], $val)) {
             throw new Exception("Parameter $p should be equal to one of those values: ".implode(", ", $val).".");

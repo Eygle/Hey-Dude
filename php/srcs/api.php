@@ -4,6 +4,10 @@ require_once("utils/Utils.php");
 require_once("mock/Mock.php");
 require_once("db/DBApi.php");
 
+/**
+ * API repartition of requeset
+ */
+
 try {
     $display = array();
     $db = new DBApi();
@@ -20,6 +24,9 @@ try {
         $mockModeOn = isset($_POST['mock']) ? $_POST['mock'] : false;
 
         switch ($_POST['action']) {
+            /**
+             * send login database request
+             */
             case "login":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "name", "image", "email", "token", "publicKey"));
@@ -32,6 +39,9 @@ try {
 
                 Utils::sendOnlineUsersList($db, $_POST['gId']);
                 break;
+            /**
+             * send logout database request
+             */
             case "logout":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
@@ -44,6 +54,9 @@ try {
 
                 Utils::sendOnlineUsersList($db);
                 break;
+            /**
+             * send call database request
+             */
             case "call":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "destGId"));
@@ -54,6 +67,9 @@ try {
                     $mock->call($_POST["gId"]);
                 }
                 break;
+            /**
+             * send hang up database request
+             */
             case "hang_up":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId", "destGId"));
@@ -64,6 +80,9 @@ try {
                     $mock->hangup($_POST["gId"]);
                 }
                 break;
+            /**
+             * send answer database request
+             */
             case "answer":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("status", "gId", "destGId"), array(array("accept", "refuse")));
@@ -78,6 +97,9 @@ try {
                     $mock->answer($_POST['status']);
                 }
                 break;
+            /**
+             * send delete account database request
+             */
             case "delete_account":
                 // Check if the parameters are present and not empty. Throw an exception otherwise
                 Utils::checkParams($_POST, array("gId"));
@@ -88,6 +110,9 @@ try {
                     $mock->deleteAccount($_POST['gId']);
                 }
                 break;
+            /**
+             * send message database request
+             */
             case "sendMessage":
                 Utils::checkParams($_POST, array("destGId", "message", "iv"));
 
@@ -96,6 +121,9 @@ try {
 
                 Utils::sendPush($token, $msg);
                 break;
+            /**
+             * send key database request
+             */
             case "sendKey":
                 Utils::checkParams($_POST, array("destGId", "key"));
 
