@@ -2,6 +2,7 @@
  * Created by Johan on 06/03/2015.
  */
 
+// Create false ID
 function guid() {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
@@ -11,46 +12,12 @@ function guid() {
     return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
 }
 
+// Refresh display
 function refresh() {
     var $body = $('body');
     $body.empty();
 
     jQuery.getJSON('mock_known_users', function(data) {
-
-        //$('<div>').attr('class', 'all_online').text("Set everyone online").click(function() {
-        //
-        //    for (var i in data) {
-        //        var u = data[i];
-        //        $.post('../api.php', {
-        //            action: "login",
-        //            mock: true,
-        //            gId: u.gId,
-        //            name: u.name,
-        //            image: u.image,
-        //            email: u.email,
-        //            publicKey: u.publicKey
-        //        });
-        //    }
-        //}).appendTo($body);
-        //
-        //function logoutUsers(i) {
-        //    if (i >= data.length) return;
-        //    var u = data[i];
-        //    $.post('../api.php', {
-        //        action: "logout",
-        //        mock: true,
-        //        gId: u.gId,
-        //        name: u.name,
-        //        image: u.image,
-        //        email: u.email,
-        //        publicKey: u.publicKey
-        //    }, logoutUsers(i + 1));
-        //}
-        //
-        //$('<div>').attr('class', 'all_offline').text("Set everyone offline").click(function() {
-        //    logoutUsers(0); // logout
-        //}).appendTo($body);
-
         for (var i in data) {
             var $content = $('<div>').attr({id:i, class:"content"});
             $('<div>').attr('class', 'crop').append($('<img>').attr({'class': 'img', src: data[i].image})).appendTo($content);

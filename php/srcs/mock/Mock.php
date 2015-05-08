@@ -6,6 +6,9 @@
  * Time: 22:25
  */
 
+/**
+ * Class Mock: DEPRECATED
+ */
 class Mock {
     private $mockCallerFile;
     private $mockOnlineFile;
@@ -21,6 +24,11 @@ class Mock {
         $this->mockKnownFile = $dir."mock_known_users";
     }
 
+    /**
+     * Store user in online user file (simulate login)
+     * @param $user
+     * @param $file
+     */
     private function addUserInFile($user, $file) {
         $users = json_decode(file_get_contents($file), true);
 
@@ -33,6 +41,11 @@ class Mock {
         file_put_contents($file, json_encode(array_values($users)));
     }
 
+    /**
+     * Remove user from user online file (simulate logout)
+     * @param $gId
+     * @param $file
+     */
     private function removeUserFromFile($gId, $file) {
         $users = json_decode(file_get_contents($file), true);
 
@@ -45,6 +58,10 @@ class Mock {
         file_put_contents($file, json_encode(array_values($users)));
     }
 
+    /**
+     * Return online users list (from file)
+     * @return array
+     */
     public function onlineUsers() {
         $arr = array();
 
@@ -54,6 +71,10 @@ class Mock {
         return $arr;
     }
 
+    /**
+     * Return user that are calling you
+     * @return array
+     */
     public function whoIsCallingMe() {
         $arr = array();
 
@@ -65,6 +86,10 @@ class Mock {
         return $arr;
     }
 
+    /**
+     * Get call status
+     * @return mixed
+     */
     public function callStatus() {
         $arr = json_decode(file_get_contents($this->mockStatusFile), true);
         if ($arr["status"] == "accept") {
@@ -80,6 +105,13 @@ class Mock {
         return $arr;
     }
 
+    /**
+     * login user
+     * @param $gId
+     * @param $name
+     * @param $image
+     * @param $email
+     */
     public function login($gId, $name, $image, $email) {
         $new = array( "gId" => $gId,
             "image" => $image,
@@ -92,10 +124,18 @@ class Mock {
         $this->addUserInFile($new, $this->mockKnownFile);
     }
 
+    /**
+     * Logout user
+     * @param $gId
+     */
     public function logout($gId) {
         $this->removeUserFromFile($gId, $this->mockOnlineFile);
     }
 
+    /**
+     * Call receiver
+     * @param $gId
+     */
     public function call($gId) {
         $users = json_decode(file_get_contents($this->mockOnlineFile), true);
 
@@ -107,14 +147,26 @@ class Mock {
         file_put_contents($this->mockStatusFile, json_encode(array("status" => "wait", "timestamp" => time())));
     }
 
+    /**
+     * Hangup call
+     * @param $id
+     */
     public function hangup($id) {
-        //TODO
+        // Not implemented
     }
 
+    /**
+     * Answer call
+     * @param $status
+     */
     public function answer($status) {
         file_put_contents($this->mockStatusFile, json_encode(array("status" => $status, "timestamp" => time())));
     }
 
+    /**
+     * Remove account from mock
+     * @param $gId
+     */
     public function deleteAccount($gId) {
         $this->logout($gId);
         $this->removeUserFromFile($gId, $this->mockKnownFile);

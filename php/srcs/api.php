@@ -5,7 +5,7 @@ require_once("mock/Mock.php");
 require_once("db/DBApi.php");
 
 /**
- * API repartition of requeset
+ * API repartition of requests
  */
 
 try {
@@ -15,6 +15,9 @@ try {
     // Set the mock
     $mock = new Mock();
 
+    /**
+     * Only POST requests are available
+     */
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Check if the parameters are present and correct. Throw an exception otherwise
         Utils::checkParams($_POST, "action", array(array("login", "logout", "call", "hang_up", "answer", "delete_account", "sendMessage", "sendKey")));

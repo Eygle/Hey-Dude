@@ -7,7 +7,7 @@
  */
 
 /**
- * Class Utils to test Android functionality
+ * Class that contains generic utils methods
  */
 class Utils {
     /**
@@ -29,7 +29,7 @@ class Utils {
     }
 
     /**
-     * Test function to test password
+     * Deprecated: Method to test mock password
      *
      * @param $password
      * @throws Exception
@@ -41,7 +41,7 @@ class Utils {
     }
 
     /**
-     * Test function to test online users on
+     * Method that send online users list to any online users
      *
      * @param $db
      * @param null $gId
@@ -54,7 +54,7 @@ class Utils {
     }
 
     /**
-     * Function to send push notification on android
+     * Method to send push notification on android devices
      *
      * @param $tokens
      * @param $data
@@ -100,7 +100,7 @@ class Utils {
     }
 
     /**
-     * Test function to check parameters
+     * Method to check parameters
      *
      * @param $t
      * @param $p
@@ -121,7 +121,7 @@ class Utils {
     }
 
     /**
-     * Test function to test parameters value
+     * Method to check parameters value
      *
      * @param $t
      * @param $p
