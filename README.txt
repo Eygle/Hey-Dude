@@ -1,4 +1,4 @@
-Hey Dude !
+Hey Dude!
 
 Johan Cavalec
 Thomas Crouzet
