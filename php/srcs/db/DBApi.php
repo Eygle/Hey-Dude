@@ -8,6 +8,9 @@ require_once 'DAO.php';
 define("TIMEOUT_ONLINE_USER", 120);
 define("TIMEOUT_CALLS", 30);
 
+/**
+ * Class DBApi database class
+ */
 class DBApi extends DAO
 {
 
@@ -16,6 +19,16 @@ class DBApi extends DAO
         parent::__construct(null, $db);
     }
 
+    /**
+     * Login database request
+     *
+     * @param $gid
+     * @param $name
+     * @param $image
+     * @param $email
+     * @param $token
+     * @param $pubk
+     */
     public function login($gid, $name, $image, $email, $token, $pubk)
     {
         $stmt = $this->pdo->prepare("
@@ -39,6 +52,11 @@ class DBApi extends DAO
         ));
     }
 
+    /**
+     * Logout database request
+     *
+     * @param $gid
+     */
     public function logout($gid)
     {
         $stmt = $this->pdo->prepare("DELETE FROM online_users WHERE gid = :gid;");
@@ -48,6 +66,11 @@ class DBApi extends DAO
         ));
     }
 
+    /**
+     * Delete account database request
+     *
+     * @param $gid
+     */
     public function deleteAccount($gid)
     {
         $stmt = $this->pdo->prepare("DELETE FROM users WHERE gid = :gid;");
@@ -57,6 +80,12 @@ class DBApi extends DAO
         ));
     }
 
+    /**
+     * Online user database request
+     *
+     * @param null $gid
+     * @return array
+     */
     public function onlineUsers($gid = null)
     {
         if ($gid) {
@@ -88,6 +117,12 @@ class DBApi extends DAO
         return array("users" => $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * get token database request
+     *
+     * @param $gid
+     * @return mixed
+     */
     public function getToken($gid) {
         $stmt = $this->pdo->prepare("SELECT token FROM users WHERE gid = :gid;");
         $stmt->execute(array(
@@ -98,6 +133,12 @@ class DBApi extends DAO
         return $res["token"];
     }
 
+    /**
+     * get public key database request
+     *
+     * @param $gid
+     * @return mixed
+     */
     public function getKey($gid) {
         $stmt = $this->pdo->prepare("SELECT pubk FROM users WHERE gid = :gid;");
         $stmt->execute(array(
@@ -108,6 +149,10 @@ class DBApi extends DAO
         return $res["pubk"];
     }
 
+    /**
+     * get tokens database request
+     * @return array
+     */
     public function getOnlineUsersTokens() {
         $stmt = $this->pdo->prepare("SELECT token FROM users WHERE gid IN (SELECT gid FROM online_users);");
         $stmt->execute();

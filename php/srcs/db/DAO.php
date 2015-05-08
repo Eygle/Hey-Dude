@@ -6,6 +6,9 @@
  * Time: 16:37
  */
 
+/**
+ * Class DAO database class base with database parameters
+ */
 class DAO{
     protected $pdo;
 

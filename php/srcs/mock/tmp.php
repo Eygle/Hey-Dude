@@ -6,6 +6,10 @@
  * Time: 19:45
  */
 
+/**
+ * mock test users
+ */
+
 $u = array();
 
 $u["Bob"] = array(
